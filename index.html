@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>METUI Project Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Dracula Theme Variables */
+            --bg: #282a36;
+            --curr: #44475a;
+            --fg: #f8f8f2;
+            --comment: #6272a4;
+            --cyan: #8be9fd;
+            --green: #50fa7b;
+            --orange: #ffb86c;
+            --pink: #ff79c6;
+            --purple: #bd93f9;
+            --red: #ff5555;
+            --yellow: #f1fa8c;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        /* TUI Container Style */
+        .window {
+            border: 2px solid var(--comment);
+            padding: 0;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .window-header {
+            background: var(--comment);
+            color: var(--bg);
+            padding: 2px 10px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .content { padding: 20px; }
+
+        /* Navigation Tabs */
+        nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid var(--purple);
+            color: var(--purple);
+            padding: 5px 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--purple);
+            color: var(--bg);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            background: var(--curr);
+            height: 20px;
+            margin: 10px 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--green);
+            width: 45%; /* Current Progress */
+        }
+
+        /* Todo List Styles */
+        ul { list-style: none; padding: 0; }
+        li::before { content: "[ ] "; color: var(--comment); }
+        li.done::before { content: "[x] "; color: var(--green); }
+        li.done { color: var(--comment); text-decoration: line-through; }
+
+        .sub-page { display: none; }
+        .sub-page.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="window">
+        <div class="window-header">
+            <span>METUI_SYSTEM_v1.0.exe</span>
+            <span>[X]</span>
+        </div>
+        <div class="content">
+            <h1>Material Expressive TUI</h1>
+            <p>Target: 1:1 MD3 Coverage | Native Web/Android/iOS Inspiration</p>
+            
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+            <p>Overall Progress: 45%</p>
+        </div>
+    </div>
+
+    <nav>
+        <button class="nav-btn active" onclick="showPage('readme')">01_README</button>
+        <button class="nav-btn" onclick="showPage('variables')">02_VARIABLES</button>
+        <button class="nav-btn" onclick="showPage('components')">03_COMPONENTS</button>
+    </nav>
+
+    <div id="readme" class="sub-page active">
+        <div class="window">
+            <div class="content">
+                <h2>> PROJECT_TODO.txt</h2>
+                <ul>
+                    <li class="done">Define Color Theme Mapping (Dracula/Catppuccin)</li>
+                    <li class="done">Establish Typography Scale</li>
+                    <li>Build TuiContainer Logic</li>
+                    <li>Build TuiButton with Reverse Video State</li>
+                    <li>Develop TuiInput (Command Prompt style)</li>
+                    <li>Create Documentation Spec Generator</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="variables" class="sub-page">
+        <div class="window">
+            <div class="content">
+                <h2>> DESIGN_TOKENS.md</h2>
+                <table style="width:100%; text-align:left; border-collapse: collapse;">
+                    <tr style="border-bottom: 1px solid var(--comment);">
+                        <th>MD3 ROLE</th>
+                        <th>HEX CODE</th>
+                        <th>TUI ROLE</th>
+                    </tr>
+                    <tr><td>Primary</td><td style="color:var(--purple)">#BD93F9</td><td>Highlights</td></tr>
+                    <tr><td>Surface</td><td style="color:var(--comment)">#282A36</td><td>Background</td></tr>
+                    <tr><td>Outline</td><td style="color:var(--cyan)">#8BE9FD</td><td>Borders</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="components" class="sub-page">
+        <div class="window">
+            <div class="content">
+                <h2>> COMPONENT_LIBRARY</h2>
+                <p>Select a component to view MD3 Expressive Specs.</p>
+                <div style="border: 1px dashed var(--comment); padding: 10px;">
+                    <h3>TuiButton (In Progress)</h3>
+                    <p>State: <strong>BETA</strong></p>
+                    <button class="nav-btn" style="margin-top:10px;">EXAMPLE_BUTTON</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPage(id) {
+            document.querySelectorAll('.sub-page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>
