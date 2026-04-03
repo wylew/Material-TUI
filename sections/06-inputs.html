@@ -6,25 +6,748 @@
 <title>METUI | 06_INPUT_FIELDS</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="metui-base.css">
+<style>
+
+/* ============================================================
+   METUI INPUT COMPONENTS
+
+   .metui-field         — wrapper for label + input + helper
+   .metui-input         — text input
+   .metui-textarea      — multiline input
+   .metui-select        — dropdown select
+   .metui-search        — search bar
+   .metui-prompt        — terminal-style prompt input
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   FIELD WRAPPER
+   ---------------------------------------------------------- */
+.metui-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+
+.metui-field__label {
+  font-size: 0.65rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.metui-field__label--required::after {
+  content: " *";
+  color: var(--red);
+}
+
+.metui-field__helper {
+  font-size: 0.68rem;
+  color: var(--fg-subtle);
+  padding-left: var(--sp-xs);
+}
+.metui-field--error   .metui-field__helper { color: var(--red); }
+.metui-field--success .metui-field__helper { color: var(--green); }
+.metui-field__helper::before { content: "// "; }
+
+/* ----------------------------------------------------------
+   TEXT INPUT
+   ---------------------------------------------------------- */
+.metui-input {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  border: 1px solid var(--outline);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  padding: 0 var(--sp-md);
+  width: 100%;
+  outline: none;
+  transition:
+    border-color var(--dur-fast) var(--ease-tui),
+    background   var(--dur-fast) var(--ease-tui),
+    box-shadow   var(--dur-fast) var(--ease-tui);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.metui-input::placeholder { color: var(--fg-subtle); }
+
+.metui-input:hover { border-color: var(--outline-hi); }
+
+.metui-input:focus {
+  border-color: var(--seed);
+  background: color-mix(in srgb, var(--seed) 4%, var(--surface));
+  box-shadow: 0 0 0 1px var(--seed);
+  outline: none;
+}
+
+/* Variants */
+.metui-field--error   .metui-input { border-color: var(--red); }
+.metui-field--error   .metui-input:focus { border-color: var(--red); box-shadow: 0 0 0 1px var(--red); }
+.metui-field--success .metui-input { border-color: var(--green); }
+.metui-field--success .metui-input:focus { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); }
+
+.metui-input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.metui-input[readonly] {
+  color: var(--fg-muted);
+  border-style: dashed;
+  cursor: default;
+}
+
+/* With prefix/suffix glyphs — wrap in .metui-input-wrap */
+.metui-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.metui-input-wrap .metui-input {
+  padding-left: var(--sp-xl);
+}
+.metui-input-wrap .metui-input--suffix {
+  padding-left: var(--sp-md);
+  padding-right: var(--sp-xl);
+}
+.metui-input-wrap__prefix,
+.metui-input-wrap__suffix {
+  position: absolute;
+  color: var(--fg-subtle);
+  font-size: 0.85rem;
+  pointer-events: none;
+  user-select: none;
+}
+.metui-input-wrap__prefix { left: var(--sp-sm); }
+.metui-input-wrap__suffix { right: var(--sp-sm); }
+
+/* ----------------------------------------------------------
+   TEXTAREA
+   ---------------------------------------------------------- */
+.metui-textarea {
+  border: 1px solid var(--outline);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  padding: var(--sp-sm) var(--sp-md);
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  outline: none;
+  line-height: 1.6;
+  transition:
+    border-color var(--dur-fast) var(--ease-tui),
+    background   var(--dur-fast) var(--ease-tui),
+    box-shadow   var(--dur-fast) var(--ease-tui);
+}
+.metui-textarea::placeholder { color: var(--fg-subtle); }
+.metui-textarea:hover  { border-color: var(--outline-hi); }
+.metui-textarea:focus  {
+  border-color: var(--seed);
+  background: color-mix(in srgb, var(--seed) 4%, var(--surface));
+  box-shadow: 0 0 0 1px var(--seed);
+  outline: none;
+}
+
+/* Char counter */
+.metui-field__counter {
+  font-size: 0.65rem;
+  color: var(--fg-subtle);
+  text-align: right;
+}
+.metui-field__counter--warn  { color: var(--yellow); }
+.metui-field__counter--over  { color: var(--red); }
+
+/* ----------------------------------------------------------
+   SELECT
+   ---------------------------------------------------------- */
+.metui-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.metui-select {
+  appearance: none;
+  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  border: 1px solid var(--outline);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  padding: 0 var(--sp-xl) 0 var(--sp-md);
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-tui),
+    background   var(--dur-fast) var(--ease-tui);
+}
+.metui-select:hover { border-color: var(--outline-hi); }
+.metui-select:focus {
+  border-color: var(--seed);
+  background: color-mix(in srgb, var(--seed) 4%, var(--surface));
+  outline: none;
+}
+.metui-select option {
+  background: var(--surface);
+  color: var(--fg);
+}
+.metui-select-wrap__arrow {
+  position: absolute;
+  right: var(--sp-md);
+  color: var(--fg-subtle);
+  pointer-events: none;
+  font-size: 0.75rem;
+  user-select: none;
+}
+
+/* ----------------------------------------------------------
+   SEARCH
+   ---------------------------------------------------------- */
+.metui-search {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--outline);
+  background: var(--surface);
+  min-height: var(--touch-target);
+  transition: border-color var(--dur-fast) var(--ease-tui);
+}
+.metui-search:focus-within {
+  border-color: var(--seed);
+  box-shadow: 0 0 0 1px var(--seed);
+}
+.metui-search__glyph {
+  padding: 0 var(--sp-sm) 0 var(--sp-md);
+  color: var(--fg-subtle);
+  font-size: 0.85rem;
+  user-select: none;
+  flex-shrink: 0;
+}
+.metui-search__input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  padding: 0 var(--sp-sm);
+  outline: none;
+  min-width: 0;
+}
+.metui-search__input::placeholder { color: var(--fg-subtle); }
+.metui-search__clear {
+  padding: 0 var(--sp-md);
+  background: none;
+  border: none;
+  color: var(--fg-subtle);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  min-height: var(--touch-target);
+  display: flex;
+  align-items: center;
+  transition: color var(--dur-fast) var(--ease-tui);
+}
+.metui-search__clear:hover { color: var(--red); }
+.metui-search__clear:focus-visible { outline: 2px solid var(--seed); outline-offset: -2px; }
+
+/* ----------------------------------------------------------
+   PROMPT (terminal-style input)
+   ---------------------------------------------------------- */
+.metui-prompt {
+  background: rgba(0,0,0,0.25);
+  border-left: 3px solid var(--seed);
+  padding: var(--sp-md);
+}
+.metui-prompt__host {
+  font-size: 0.75rem;
+  color: var(--green);
+  margin-bottom: var(--sp-xs);
+  user-select: none;
+}
+.metui-prompt__row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--outline);
+  padding-bottom: var(--sp-xs);
+  transition: border-color var(--dur-fast) var(--ease-tui);
+}
+.metui-prompt:focus-within .metui-prompt__row { border-bottom-color: var(--seed); }
+.metui-prompt__gt {
+  color: var(--seed);
+  margin-right: var(--sp-sm);
+  font-weight: 700;
+  user-select: none;
+  flex-shrink: 0;
+}
+.metui-prompt__input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  outline: none;
+  min-width: 0;
+}
+.metui-prompt__input::placeholder { color: var(--fg-subtle); }
+
+/* Error/warning prompt states */
+.metui-prompt--error { border-left-color: var(--red); }
+.metui-prompt--error .metui-prompt__gt { color: var(--red); }
+.metui-prompt--error .metui-prompt__row { border-bottom-color: var(--red); }
+.metui-prompt--error .metui-prompt__host::before { content: "[!] "; color: var(--red); }
+
+/* ============================================================
+   CODE BLOCK (for the copy-paste snippets in this doc)
+   ============================================================ */
+.code-block {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--surface-2);
+  border-left: 3px solid var(--tonal-40);
+  margin-top: var(--sp-md);
+}
+.code-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-xs) var(--sp-md);
+  border-bottom: 1px solid var(--surface-2);
+  background: var(--surface-2);
+}
+.code-block__lang {
+  font-size: 0.6rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.code-block__copy {
+  background: none;
+  border: 1px solid var(--outline);
+  color: var(--fg-subtle);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  padding: 2px var(--sp-sm);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color var(--dur-fast) var(--ease-tui), border-color var(--dur-fast) var(--ease-tui);
+}
+.code-block__copy:hover { color: var(--seed); border-color: var(--seed); }
+.code-block__copy:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
+.code-block__copy.copied { color: var(--green); border-color: var(--green); }
+
+.code-block pre {
+  padding: var(--sp-md);
+  overflow-x: auto;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--fg-muted);
+  margin: 0;
+  white-space: pre;
+  scrollbar-width: thin;
+  scrollbar-color: var(--outline) transparent;
+}
+.code-block pre .hl-tag   { color: var(--cyan); }
+.code-block pre .hl-attr  { color: var(--seed); }
+.code-block pre .hl-val   { color: var(--green); }
+.code-block pre .hl-com   { color: var(--fg-subtle); font-style: italic; }
+
+/* demo grid helpers */
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: var(--sp-lg);
+}
+.demo-surface {
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  padding: var(--sp-lg);
+}
+</style>
 </head>
 <body>
+
 <header class="section-header">
-  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0</div>
+  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0 / 06</div>
   <h1 class="section-header__title">> 06_INPUT_FIELDS</h1>
-  <p class="section-header__desc">Prompt fields, search, text areas, and error states.</p>
+  <p class="section-header__desc">Prompt fields, text inputs, selects, search, and textarea. Each component shown with live demo + copy-paste code.</p>
 </header>
-<div class="demo-box">
-  <div class="demo-box__label">// SECTION_STUB</div>
-  <p style="color:var(--fg-muted);font-size:0.85rem;margin-bottom:var(--sp-md)">
-    This section is queued for implementation. Drop the completed
-    <code>06-inputs.html</code> into the <code>sections/</code> folder to replace this stub.
-  </p>
-  <div style="border-left:3px solid var(--tonal-40);padding:var(--sp-md);background:color-mix(in srgb,var(--seed) 4%,var(--bg))">
-    <div style="font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">Contents_Planned</div>
-    <p style="font-size:0.82rem;color:var(--fg-muted)">Prompt fields, search, text areas, and error states.</p>
+
+<!-- ============================================================
+     06.1 — PROMPT (terminal style)
+     ============================================================ -->
+<section class="subsection" aria-labelledby="prompt-label">
+  <div id="prompt-label" class="subsection__label">06.1 — Prompt (terminal style)</div>
+
+  <div class="demo-grid">
+
+    <!-- Normal -->
+    <div>
+      <div style="font-size:0.6rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">// NORMAL</div>
+      <div class="metui-prompt">
+        <div class="metui-prompt__host">guest@metui:~/projects$</div>
+        <div class="metui-prompt__row">
+          <span class="metui-prompt__gt">&gt;</span>
+          <input class="metui-prompt__input" type="text" placeholder="type a command_" aria-label="Command input">
+        </div>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div>
+      <div style="font-size:0.6rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">// ERROR_STATE</div>
+      <div class="metui-prompt metui-prompt--error">
+        <div class="metui-prompt__host">guest@metui:~/projects$</div>
+        <div class="metui-prompt__row">
+          <span class="metui-prompt__gt">&gt;</span>
+          <input class="metui-prompt__input" type="text" value="rm -rf /sys" aria-label="Command input (error state)">
+        </div>
+      </div>
+    </div>
+
   </div>
-</div>
+
+  <div class="code-block" data-code="prompt">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this, 'prompt')">COPY</button>
+    </div>
+    <pre id="code-prompt"><span class="hl-com">&lt;!-- Normal prompt --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-prompt"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-prompt__host"</span><span class="hl-tag">&gt;</span>guest@metui:~/projects$<span class="hl-tag">&lt;/div&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-prompt__row"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-prompt__gt"</span><span class="hl-tag">&gt;</span>&gt;<span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;input</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-prompt__input"</span> <span class="hl-attr">type</span>=<span class="hl-val">"text"</span>
+           <span class="hl-attr">placeholder</span>=<span class="hl-val">"type a command_"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;/div&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span>
+
+<span class="hl-com">&lt;!-- Error state: add .metui-prompt--error --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-prompt metui-prompt--error"</span><span class="hl-tag">&gt;</span>
+  ...
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+  </div>
+</section>
+
+<!-- ============================================================
+     06.2 — TEXT INPUT
+     ============================================================ -->
+<section class="subsection" aria-labelledby="input-label">
+  <div id="input-label" class="subsection__label">06.2 — Text Input</div>
+
+  <div class="demo-grid">
+
+    <!-- Normal -->
+    <div class="metui-field">
+      <label class="metui-field__label metui-field__label--required" for="inp-username">USERNAME</label>
+      <input class="metui-input" id="inp-username" type="text" placeholder="enter_username_">
+      <span class="metui-field__helper">Must be 3–32 characters</span>
+    </div>
+
+    <!-- Error -->
+    <div class="metui-field metui-field--error">
+      <label class="metui-field__label" for="inp-email">EMAIL_ADDRESS</label>
+      <input class="metui-input" id="inp-email" type="email" value="not-an-email" aria-describedby="email-err">
+      <span class="metui-field__helper" id="email-err">Invalid email format</span>
+    </div>
+
+    <!-- Success -->
+    <div class="metui-field metui-field--success">
+      <label class="metui-field__label" for="inp-key">API_KEY</label>
+      <input class="metui-input" id="inp-key" type="text" value="sk-live-abc123xyz" readonly>
+      <span class="metui-field__helper">Key verified</span>
+    </div>
+
+    <!-- Disabled -->
+    <div class="metui-field">
+      <label class="metui-field__label" for="inp-locked">LOCKED_FIELD</label>
+      <input class="metui-input" id="inp-locked" type="text" value="readonly_value" disabled>
+      <span class="metui-field__helper">Managed by system config</span>
+    </div>
+
+    <!-- With prefix -->
+    <div class="metui-field">
+      <label class="metui-field__label" for="inp-port">PORT_NUMBER</label>
+      <div class="metui-input-wrap">
+        <span class="metui-input-wrap__prefix">:</span>
+        <input class="metui-input" id="inp-port" type="number" value="8080" aria-label="Port number">
+      </div>
+    </div>
+
+    <!-- With suffix -->
+    <div class="metui-field">
+      <label class="metui-field__label" for="inp-path">FILE_PATH</label>
+      <div class="metui-input-wrap">
+        <input class="metui-input metui-input--suffix" id="inp-path" type="text" value="/home/wyatt/config" aria-label="File path">
+        <span class="metui-input-wrap__suffix">/</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this, 'text-input')">COPY</button>
+    </div>
+    <pre id="code-text-input"><span class="hl-com">&lt;!-- Base field --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-field"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;label</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-field__label metui-field__label--required"</span>
+         <span class="hl-attr">for</span>=<span class="hl-val">"my-input"</span><span class="hl-tag">&gt;</span>LABEL<span class="hl-tag">&lt;/label&gt;</span>
+  <span class="hl-tag">&lt;input</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-input"</span> <span class="hl-attr">id</span>=<span class="hl-val">"my-input"</span> <span class="hl-attr">type</span>=<span class="hl-val">"text"</span>
+         <span class="hl-attr">placeholder</span>=<span class="hl-val">"placeholder_"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-field__helper"</span><span class="hl-tag">&gt;</span>Helper text<span class="hl-tag">&lt;/span&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span>
+
+<span class="hl-com">&lt;!-- State modifiers on .metui-field --&gt;</span>
+<span class="hl-com">&lt;!-- .metui-field--error   → red border + helper --&gt;</span>
+<span class="hl-com">&lt;!-- .metui-field--success → green border + helper --&gt;</span>
+
+<span class="hl-com">&lt;!-- With prefix/suffix glyph --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-input-wrap"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-input-wrap__prefix"</span><span class="hl-tag">&gt;</span>:<span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;input</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-input"</span> <span class="hl-attr">type</span>=<span class="hl-val">"text"</span><span class="hl-tag">&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+  </div>
+</section>
+
+<!-- ============================================================
+     06.3 — TEXTAREA
+     ============================================================ -->
+<section class="subsection" aria-labelledby="textarea-label">
+  <div id="textarea-label" class="subsection__label">06.3 — Textarea</div>
+
+  <div class="demo-grid">
+
+    <div class="metui-field">
+      <label class="metui-field__label" for="ta-notes">COMMIT_MESSAGE</label>
+      <textarea class="metui-textarea" id="ta-notes" maxlength="200"
+                placeholder="describe your changes_"
+                oninput="updateCounter(this, 'ta-counter', 200)"
+                aria-describedby="ta-counter"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span class="metui-field__helper">Conventional commits format preferred</span>
+        <span class="metui-field__counter" id="ta-counter">0 / 200</span>
+      </div>
+    </div>
+
+    <div class="metui-field metui-field--error">
+      <label class="metui-field__label" for="ta-config">CONFIG_OVERRIDE</label>
+      <textarea class="metui-textarea" id="ta-config"
+                style="min-height:88px">invalid: yaml: [syntax</textarea>
+      <span class="metui-field__helper">YAML parse error on line 1</span>
+    </div>
+
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this, 'textarea')">COPY</button>
+    </div>
+    <pre id="code-textarea"><span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-field"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;label</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-field__label"</span> <span class="hl-attr">for</span>=<span class="hl-val">"my-ta"</span><span class="hl-tag">&gt;</span>LABEL<span class="hl-tag">&lt;/label&gt;</span>
+  <span class="hl-tag">&lt;textarea</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-textarea"</span> <span class="hl-attr">id</span>=<span class="hl-val">"my-ta"</span>
+            <span class="hl-attr">maxlength</span>=<span class="hl-val">"200"</span>
+            <span class="hl-attr">placeholder</span>=<span class="hl-val">"placeholder_"</span>
+            <span class="hl-attr">oninput</span>=<span class="hl-val">"updateCounter(this, 'counter-id', 200)"</span>
+            <span class="hl-attr">aria-describedby</span>=<span class="hl-val">"counter-id"</span><span class="hl-tag">&gt;&lt;/textarea&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">style</span>=<span class="hl-val">"display:flex;justify-content:space-between"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-field__helper"</span><span class="hl-tag">&gt;</span>Helper text<span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-field__counter"</span> <span class="hl-attr">id</span>=<span class="hl-val">"counter-id"</span><span class="hl-tag">&gt;</span>0 / 200<span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;/div&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+  </div>
+</section>
+
+<!-- ============================================================
+     06.4 — SELECT
+     ============================================================ -->
+<section class="subsection" aria-labelledby="select-label">
+  <div id="select-label" class="subsection__label">06.4 — Select</div>
+
+  <div class="demo-grid">
+
+    <div class="metui-field">
+      <label class="metui-field__label" for="sel-env">DEPLOY_ENVIRONMENT</label>
+      <div class="metui-select-wrap">
+        <select class="metui-select" id="sel-env">
+          <option value="">-- SELECT_ENV --</option>
+          <option value="dev">development</option>
+          <option value="stage">staging</option>
+          <option value="prod" selected>production</option>
+        </select>
+        <span class="metui-select-wrap__arrow" aria-hidden="true">▼</span>
+      </div>
+    </div>
+
+    <div class="metui-field">
+      <label class="metui-field__label" for="sel-log">LOG_VERBOSITY</label>
+      <div class="metui-select-wrap">
+        <select class="metui-select" id="sel-log">
+          <option value="0">SILENT</option>
+          <option value="1" selected>ERROR</option>
+          <option value="2">WARN</option>
+          <option value="3">INFO</option>
+          <option value="4">DEBUG</option>
+          <option value="5">TRACE</option>
+        </select>
+        <span class="metui-select-wrap__arrow" aria-hidden="true">▼</span>
+      </div>
+      <span class="metui-field__helper">Controls output verbosity level</span>
+    </div>
+
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this, 'select')">COPY</button>
+    </div>
+    <pre id="code-select"><span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-field"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;label</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-field__label"</span> <span class="hl-attr">for</span>=<span class="hl-val">"my-sel"</span><span class="hl-tag">&gt;</span>LABEL<span class="hl-tag">&lt;/label&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-select-wrap"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;select</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-select"</span> <span class="hl-attr">id</span>=<span class="hl-val">"my-sel"</span><span class="hl-tag">&gt;</span>
+      <span class="hl-tag">&lt;option</span> <span class="hl-attr">value</span>=<span class="hl-val">""</span><span class="hl-tag">&gt;</span>-- SELECT --<span class="hl-tag">&lt;/option&gt;</span>
+      <span class="hl-tag">&lt;option</span> <span class="hl-attr">value</span>=<span class="hl-val">"a"</span><span class="hl-tag">&gt;</span>OPTION_A<span class="hl-tag">&lt;/option&gt;</span>
+      <span class="hl-tag">&lt;option</span> <span class="hl-attr">value</span>=<span class="hl-val">"b"</span><span class="hl-tag">&gt;</span>OPTION_B<span class="hl-tag">&lt;/option&gt;</span>
+    <span class="hl-tag">&lt;/select&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-select-wrap__arrow"</span> <span class="hl-attr">aria-hidden</span>=<span class="hl-val">"true"</span><span class="hl-tag">&gt;</span>▼<span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;/div&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+  </div>
+</section>
+
+<!-- ============================================================
+     06.5 — SEARCH
+     ============================================================ -->
+<section class="subsection" aria-labelledby="search-label">
+  <div id="search-label" class="subsection__label">06.5 — Search</div>
+
+  <div style="max-width:480px">
+    <div class="metui-search" role="search">
+      <span class="metui-search__glyph" aria-hidden="true">/</span>
+      <input class="metui-search__input" type="search"
+             placeholder="search_commands_" aria-label="Search commands"
+             id="search-inp" oninput="toggleClear(this)">
+      <button class="metui-search__clear" id="search-clear"
+              onclick="clearSearch()" aria-label="Clear search"
+              style="display:none">[×]</button>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this, 'search')">COPY</button>
+    </div>
+    <pre id="code-search"><span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-search"</span> <span class="hl-attr">role</span>=<span class="hl-val">"search"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-search__glyph"</span> <span class="hl-attr">aria-hidden</span>=<span class="hl-val">"true"</span><span class="hl-tag">&gt;</span>/<span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;input</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-search__input"</span> <span class="hl-attr">type</span>=<span class="hl-val">"search"</span>
+         <span class="hl-attr">placeholder</span>=<span class="hl-val">"search_"</span> <span class="hl-attr">aria-label</span>=<span class="hl-val">"Search"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;button</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-search__clear"</span>
+          <span class="hl-attr">aria-label</span>=<span class="hl-val">"Clear search"</span><span class="hl-tag">&gt;</span>[×]<span class="hl-tag">&lt;/button&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+  </div>
+</section>
+
+<!-- ============================================================
+     06.6 — MD3 MAPPING
+     ============================================================ -->
+<section class="subsection" aria-labelledby="spec-label">
+  <div id="spec-label" class="subsection__label">06.6 — MD3 Mapping</div>
+  <table class="spec-table">
+    <thead>
+      <tr><th>MD3 Element</th><th>METUI Class</th><th>TUI Treatment</th><th>Focus Indicator</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Filled TextField</td>
+        <td><code>.metui-prompt</code></td>
+        <td>Bordered block with host label + <code>&gt;</code> prefix</td>
+        <td>Bottom border shifts to seed</td>
+      </tr>
+      <tr>
+        <td>Outlined TextField</td>
+        <td><code>.metui-input</code></td>
+        <td>1px border, surface bg</td>
+        <td>Seed border + 1px box-shadow ring</td>
+      </tr>
+      <tr>
+        <td>Error State</td>
+        <td><code>.metui-field--error</code></td>
+        <td>Red border, <code>[!]</code> helper prefix</td>
+        <td>Red ring on focus</td>
+      </tr>
+      <tr>
+        <td>Supporting Text</td>
+        <td><code>.metui-field__helper</code></td>
+        <td><code>// comment</code> style below field</td>
+        <td>Color inherits from field state</td>
+      </tr>
+      <tr>
+        <td>Multiline</td>
+        <td><code>.metui-textarea</code></td>
+        <td>Resizable, char counter</td>
+        <td>Seed border + ring</td>
+      </tr>
+      <tr>
+        <td>Search</td>
+        <td><code>.metui-search</code></td>
+        <td><code>/</code> vim-style glyph prefix</td>
+        <td>Seed border + ring on container</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
 <script>
+/* Textarea counter */
+function updateCounter(el, counterId, max) {
+  const counter = document.getElementById(counterId);
+  if (!counter) return;
+  const len = el.value.length;
+  counter.textContent = len + ' / ' + max;
+  counter.classList.toggle('metui-field__counter--warn', len >= max * 0.8 && len < max);
+  counter.classList.toggle('metui-field__counter--over', len >= max);
+}
+
+/* Search clear */
+function toggleClear(inp) {
+  const btn = document.getElementById('search-clear');
+  if (btn) btn.style.display = inp.value ? 'flex' : 'none';
+}
+function clearSearch() {
+  const inp = document.getElementById('search-inp');
+  const btn = document.getElementById('search-clear');
+  if (inp) inp.value = '';
+  if (btn) btn.style.display = 'none';
+  if (inp) inp.focus();
+}
+
+/* Copy code blocks */
+function copyCode(btn, id) {
+  const pre = document.getElementById('code-' + id);
+  if (!pre) return;
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'COPIED';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'COPY';
+      btn.classList.remove('copied');
+    }, 1800);
+  });
+}
+
+/* Theme receiver */
 window.addEventListener('message', e => {
   if (e.data?.type !== 'METUI_THEME') return;
   const root = document.documentElement;
