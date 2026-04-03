@@ -6,25 +6,644 @@
 <title>METUI | 07_TYPOGRAPHY</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="metui-base.css">
+<style>
+
+/* ============================================================
+   METUI TYPOGRAPHY SYSTEM
+
+   Classes map MD3 type roles to monospace TUI equivalents.
+   All sizes use rem; base = 14px on body.
+
+   .metui-display-lg     2.0rem  bold    all-caps  seed
+   .metui-display-sm     1.4rem  bold    all-caps  seed
+   .metui-headline-lg    1.2rem  bold    mixed     fg + border-bottom
+   .metui-headline-sm    1.0rem  bold    mixed     fg
+   .metui-title-md       0.9rem  bold    brackets  cyan
+   .metui-title-sm       0.82rem bold    prefix    fg
+   .metui-body-lg        0.9rem  400     —         fg
+   .metui-body-sm        0.82rem 400     —         fg-muted
+   .metui-label-md       0.72rem 700     caps      fg-subtle
+   .metui-label-sm       0.65rem 400     caps      fg-subtle  // comment prefix
+   .metui-code           0.82rem 400     —         yellow on surface-2
+   .metui-mono-display   2.4rem  700     —         seed  (boot/hero use)
+   ============================================================ */
+
+/* Display */
+.metui-display-lg {
+  font-size: 2.0rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--seed);
+  letter-spacing: 2px;
+  line-height: 1.1;
+}
+.metui-display-sm {
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--seed);
+  letter-spacing: 1px;
+  line-height: 1.2;
+}
+
+/* Mono display (boot/hero) */
+.metui-mono-display {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--seed);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+/* Headline */
+.metui-headline-lg {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--fg);
+  border-bottom: 1px solid var(--seed);
+  padding-bottom: 4px;
+  line-height: 1.3;
+}
+.metui-headline-sm {
+  font-size: 1.0rem;
+  font-weight: 700;
+  color: var(--fg);
+  line-height: 1.3;
+}
+
+/* Title */
+.metui-title-md {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--cyan);
+  line-height: 1.4;
+}
+.metui-title-md::before { content: "[ "; }
+.metui-title-md::after  { content: " ]"; }
+
+.metui-title-sm {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--fg);
+  line-height: 1.4;
+}
+
+/* Body */
+.metui-body-lg {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--fg);
+  line-height: 1.7;
+}
+.metui-body-sm {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--fg-muted);
+  line-height: 1.7;
+}
+
+/* Label */
+.metui-label-md {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--fg-subtle);
+  line-height: 1.4;
+}
+.metui-label-sm {
+  font-size: 0.65rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--fg-subtle);
+  line-height: 1.4;
+}
+.metui-label-sm::before { content: "// "; }
+
+/* Inline code */
+.metui-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  color: var(--yellow);
+  background: var(--surface-2);
+  padding: 2px 6px;
+}
+
+/* ============================================================
+   SEMANTIC COLOR MODIFIERS
+   Can be added to any type class
+   ============================================================ */
+.metui-text--seed    { color: var(--seed) !important; }
+.metui-text--cyan    { color: var(--cyan) !important; }
+.metui-text--green   { color: var(--green) !important; }
+.metui-text--red     { color: var(--red) !important; }
+.metui-text--yellow  { color: var(--yellow) !important; }
+.metui-text--muted   { color: var(--fg-muted) !important; }
+.metui-text--subtle  { color: var(--fg-subtle) !important; }
+
+/* ============================================================
+   CODE BLOCK (copy-paste viewer)
+   ============================================================ */
+.code-block {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--surface-2);
+  border-left: 3px solid var(--tonal-40);
+  margin-top: var(--sp-md);
+}
+.code-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-xs) var(--sp-md);
+  border-bottom: 1px solid var(--surface-2);
+  background: var(--surface-2);
+}
+.code-block__lang {
+  font-size: 0.6rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.code-block__copy {
+  background: none;
+  border: 1px solid var(--outline);
+  color: var(--fg-subtle);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  padding: 2px var(--sp-sm);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color var(--dur-fast) var(--ease-tui), border-color var(--dur-fast) var(--ease-tui);
+}
+.code-block__copy:hover { color: var(--seed); border-color: var(--seed); }
+.code-block__copy:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
+.code-block__copy.copied { color: var(--green); border-color: var(--green); }
+.code-block pre {
+  padding: var(--sp-md);
+  overflow-x: auto;
+  font-size: 0.78rem;
+  line-height: 1.7;
+  color: var(--fg-muted);
+  margin: 0;
+  white-space: pre;
+  scrollbar-width: thin;
+  scrollbar-color: var(--outline) transparent;
+}
+.code-block pre .hl-tag  { color: var(--cyan); }
+.code-block pre .hl-attr { color: var(--seed); }
+.code-block pre .hl-val  { color: var(--green); }
+.code-block pre .hl-com  { color: var(--fg-subtle); font-style: italic; }
+.code-block pre .hl-cls  { color: var(--yellow); }
+.code-block pre .hl-prop { color: var(--seed); }
+.code-block pre .hl-num  { color: var(--cyan); }
+
+/* scale demo */
+.scale-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-lg);
+  padding: var(--sp-md) 0;
+  border-bottom: 1px solid var(--surface-2);
+  flex-wrap: wrap;
+}
+.scale-row:last-child { border-bottom: none; }
+.scale-row__meta {
+  flex-shrink: 0;
+  width: 160px;
+  font-size: 0.65rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.scale-row__sample { flex: 1; min-width: 200px; }
+.scale-row__spec {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  color: var(--fg-subtle);
+  white-space: nowrap;
+}
+
+/* line height demo */
+.lh-demo {
+  padding: var(--sp-md);
+  border: 1px solid var(--outline);
+  background: var(--surface);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--fg-muted);
+  max-width: 480px;
+}
+.lh-demo p + p { margin-top: 0.8em; }
+
+/* color modifier demo */
+.color-demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-md);
+  padding: var(--sp-md) 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+</style>
 </head>
 <body>
+
 <header class="section-header">
-  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0</div>
+  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0 / 07</div>
   <h1 class="section-header__title">T 07_TYPOGRAPHY</h1>
-  <p class="section-header__desc">Type scale, role mapping, line-height, and monospace hierarchy.</p>
+  <p class="section-header__desc">Complete type scale mapping MD3 roles to monospace TUI equivalents. Copy-paste ready classes.</p>
 </header>
-<div class="demo-box">
-  <div class="demo-box__label">// SECTION_STUB</div>
-  <p style="color:var(--fg-muted);font-size:0.85rem;margin-bottom:var(--sp-md)">
-    This section is queued for implementation. Drop the completed
-    <code>07-typography.html</code> into the <code>sections/</code> folder to replace this stub.
-  </p>
-  <div style="border-left:3px solid var(--tonal-40);padding:var(--sp-md);background:color-mix(in srgb,var(--seed) 4%,var(--bg))">
-    <div style="font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">Contents_Planned</div>
-    <p style="font-size:0.82rem;color:var(--fg-muted)">Type scale, role mapping, line-height, and monospace hierarchy.</p>
+
+<!-- ============================================================
+     07.1 — TYPE SCALE
+     ============================================================ -->
+<section class="subsection" aria-labelledby="scale-label">
+  <div id="scale-label" class="subsection__label">07.1 — Type Scale</div>
+
+  <div>
+    <div class="scale-row">
+      <div class="scale-row__meta">mono-display</div>
+      <div class="scale-row__sample">
+        <span class="metui-mono-display">METUI_v2</span>
+      </div>
+      <div class="scale-row__spec">2.4rem · 700 · seed</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-row__meta">display-lg</div>
+      <div class="scale-row__sample">
+        <span class="metui-display-lg">SYSTEM_INIT</span>
+      </div>
+      <div class="scale-row__spec">2.0rem · 700 · uppercase · seed</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-row__meta">display-sm</div>
+      <div class="scale-row__sample">
+        <span class="metui-display-sm">BOOT_SEQUENCE</span>
+      </div>
+      <div class="scale-row__spec">1.4rem · 700 · uppercase · seed</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-row__meta">headline-lg</div>
+      <div class="scale-row__sample">
+        <span class="metui-headline-lg">Section_Header_One</span>
+      </div>
+      <div class="scale-row__spec">1.2rem · 700 · seed underline</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-row__meta">headline-sm</div>
+      <div class="scale-row__sample">
+        <span class="metui-headline-sm">Section_Header_Two</span>
+      </div>
+      <div class="scale-row__spec">1.0rem · 700 · fg</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-row__meta">title-md</div>
+      <div class="scale-row__sample">
+        <span class="metui-title-md">Component_Group</span>
+      </div>
+      <div class="scale-row__spec">0.9rem · 700 · brackets · cyan</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-row__meta">title-sm</div>
+      <div class="scale-row__sample">
+        <span class="metui-title-sm">Subsection_Title</span>
+      </div>
+      <div class="scale-row__spec">0.82rem · 700 · fg</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-row__meta">body-lg</div>
+      <div class="scale-row__sample">
+        <span class="metui-body-lg">Standard body text for general documentation and descriptions.</span>
+      </div>
+      <div class="scale-row__spec">0.9rem · 400 · fg · lh 1.7</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-row__meta">body-sm</div>
+      <div class="scale-row__sample">
+        <span class="metui-body-sm">Secondary body text, helper copy, supporting descriptions.</span>
+      </div>
+      <div class="scale-row__spec">0.82rem · 400 · fg-muted · lh 1.7</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-row__meta">label-md</div>
+      <div class="scale-row__sample">
+        <span class="metui-label-md">SECTION_LABEL</span>
+      </div>
+      <div class="scale-row__spec">0.72rem · 700 · uppercase · 2px spacing</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-row__meta">label-sm</div>
+      <div class="scale-row__sample">
+        <span class="metui-label-sm">metadata_tag</span>
+      </div>
+      <div class="scale-row__spec">0.65rem · 400 · // prefix · fg-subtle</div>
+    </div>
+    <div class="scale-row">
+      <div class="scale-row__meta">code</div>
+      <div class="scale-row__sample">
+        inline <span class="metui-code">--seed</span> token reference
+      </div>
+      <div class="scale-row__spec">0.82rem · yellow · surface-2 bg</div>
+    </div>
   </div>
-</div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this,'scale')">COPY</button>
+    </div>
+    <pre id="code-scale"><span class="hl-com">&lt;!-- Display --&gt;</span>
+<span class="hl-tag">&lt;h1</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-mono-display"</span><span class="hl-tag">&gt;</span>METUI_v2<span class="hl-tag">&lt;/h1&gt;</span>
+<span class="hl-tag">&lt;h1</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-display-lg"</span><span class="hl-tag">&gt;</span>SYSTEM_INIT<span class="hl-tag">&lt;/h1&gt;</span>
+<span class="hl-tag">&lt;h2</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-display-sm"</span><span class="hl-tag">&gt;</span>BOOT_SEQUENCE<span class="hl-tag">&lt;/h2&gt;</span>
+
+<span class="hl-com">&lt;!-- Headline --&gt;</span>
+<span class="hl-tag">&lt;h2</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-headline-lg"</span><span class="hl-tag">&gt;</span>Section_Header<span class="hl-tag">&lt;/h2&gt;</span>
+<span class="hl-tag">&lt;h3</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-headline-sm"</span><span class="hl-tag">&gt;</span>Sub_Header<span class="hl-tag">&lt;/h3&gt;</span>
+
+<span class="hl-com">&lt;!-- Title --&gt;</span>
+<span class="hl-tag">&lt;h3</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-title-md"</span><span class="hl-tag">&gt;</span>Component_Group<span class="hl-tag">&lt;/h3&gt;</span>
+<span class="hl-tag">&lt;h4</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-title-sm"</span><span class="hl-tag">&gt;</span>Subsection_Title<span class="hl-tag">&lt;/h4&gt;</span>
+
+<span class="hl-com">&lt;!-- Body --&gt;</span>
+<span class="hl-tag">&lt;p</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-body-lg"</span><span class="hl-tag">&gt;</span>Standard body text.<span class="hl-tag">&lt;/p&gt;</span>
+<span class="hl-tag">&lt;p</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-body-sm"</span><span class="hl-tag">&gt;</span>Secondary helper copy.<span class="hl-tag">&lt;/p&gt;</span>
+
+<span class="hl-com">&lt;!-- Label --&gt;</span>
+<span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-label-md"</span><span class="hl-tag">&gt;</span>SECTION_LABEL<span class="hl-tag">&lt;/span&gt;</span>
+<span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-label-sm"</span><span class="hl-tag">&gt;</span>metadata_tag<span class="hl-tag">&lt;/span&gt;</span>
+
+<span class="hl-com">&lt;!-- Inline code --&gt;</span>
+Use <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-code"</span><span class="hl-tag">&gt;</span>--seed<span class="hl-tag">&lt;/span&gt;</span> to set the palette.</pre>
+  </div>
+</section>
+
+<!-- ============================================================
+     07.2 — COLOR MODIFIERS
+     ============================================================ -->
+<section class="subsection" aria-labelledby="color-label">
+  <div id="color-label" class="subsection__label">07.2 — Semantic Color Modifiers</div>
+
+  <p class="metui-body-sm" style="margin-bottom:var(--sp-md)">
+    Add to any type class. Color modifiers use <code>!important</code> to override role defaults.
+  </p>
+
+  <div class="color-demo-row">
+    <span class="metui-body-lg metui-text--seed">metui-text--seed</span>
+    <span class="metui-body-lg metui-text--cyan">metui-text--cyan</span>
+    <span class="metui-body-lg metui-text--green">metui-text--green</span>
+    <span class="metui-body-lg metui-text--red">metui-text--red</span>
+    <span class="metui-body-lg metui-text--yellow">metui-text--yellow</span>
+    <span class="metui-body-lg metui-text--muted">metui-text--muted</span>
+    <span class="metui-body-lg metui-text--subtle">metui-text--subtle</span>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this,'colors')">COPY</button>
+    </div>
+    <pre id="code-colors"><span class="hl-com">&lt;!-- Combine any type role with a color modifier --&gt;</span>
+<span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-headline-sm metui-text--red"</span><span class="hl-tag">&gt;</span>Error<span class="hl-tag">&lt;/span&gt;</span>
+<span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-label-md metui-text--green"</span><span class="hl-tag">&gt;</span>SUCCESS<span class="hl-tag">&lt;/span&gt;</span>
+<span class="hl-tag">&lt;p</span>    <span class="hl-attr">class</span>=<span class="hl-val">"metui-body-lg metui-text--muted"</span><span class="hl-tag">&gt;</span>Dimmed copy.<span class="hl-tag">&lt;/p&gt;</span>
+
+<span class="hl-com">&lt;!-- Available modifiers --&gt;</span>
+<span class="hl-com">&lt;!-- .metui-text--seed   → var(--seed)      --&gt;</span>
+<span class="hl-com">&lt;!-- .metui-text--cyan   → var(--cyan)      --&gt;</span>
+<span class="hl-com">&lt;!-- .metui-text--green  → var(--green)     --&gt;</span>
+<span class="hl-com">&lt;!-- .metui-text--red    → var(--red)       --&gt;</span>
+<span class="hl-com">&lt;!-- .metui-text--yellow → var(--yellow)    --&gt;</span>
+<span class="hl-com">&lt;!-- .metui-text--muted  → var(--fg-muted)  --&gt;</span>
+<span class="hl-com">&lt;!-- .metui-text--subtle → var(--fg-subtle) --&gt;</span></pre>
+  </div>
+</section>
+
+<!-- ============================================================
+     07.3 — LINE HEIGHT & DENSITY
+     ============================================================ -->
+<section class="subsection" aria-labelledby="lh-label">
+  <div id="lh-label" class="subsection__label">07.3 — Line Height & Reading Density</div>
+
+  <div class="grid grid--2col">
+
+    <div>
+      <div class="subsection__label" style="margin-bottom:var(--sp-sm)">Body text · lh 1.7</div>
+      <div class="lh-demo">
+        <p>Standard body copy at 1.7 line-height. Generous spacing prevents the "wall of text" common in legacy terminals.</p>
+        <p>Use <span class="metui-code">.metui-body-lg</span> for primary documentation and <span class="metui-code">.metui-body-sm</span> for secondary supporting copy.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="subsection__label" style="margin-bottom:var(--sp-sm)">Data table · lh 1.4 (compact)</div>
+      <div class="lh-demo" style="line-height:1.4;font-size:0.78rem;font-family:'JetBrains Mono',monospace;color:var(--fg-muted)">
+        <span style="color:var(--seed)">PID   NAME           CPU    MEM</span><br>
+        1042  kernel_sched   0.02%  2.1GB<br>
+        2218  metui_server   1.4%   512MB<br>
+        3301  log_daemon     0.00%  64MB<br>
+        4410  fs_watcher     0.1%   28MB<br>
+        5502  net_monitor    0.3%   96MB
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:var(--sp-lg)">
+    <table class="spec-table">
+      <thead>
+        <tr><th>Density Level</th><th>Line-Height</th><th>Use Case</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Relaxed</td><td>1.7 – 1.8</td><td>Onboarding, hero sections, marketing copy</td></tr>
+        <tr><td>Standard</td><td>1.6</td><td>Body text, documentation, card content</td></tr>
+        <tr><td>Compact</td><td>1.3 – 1.4</td><td>Data tables, log streams, process lists</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================================================
+     07.4 — MD3 ROLE MAPPING
+     ============================================================ -->
+<section class="subsection" aria-labelledby="md3-label">
+  <div id="md3-label" class="subsection__label">07.4 — MD3 Role Mapping</div>
+
+  <table class="spec-table">
+    <thead>
+      <tr><th>MD3 Role</th><th>METUI Class</th><th>TUI Treatment</th><th>Size / Weight</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Display Large</td>
+        <td><code>.metui-display-lg</code></td>
+        <td>ALL-CAPS, seed color, wide letter-spacing</td>
+        <td>2.0rem / 700</td>
+      </tr>
+      <tr>
+        <td>Display Small</td>
+        <td><code>.metui-display-sm</code></td>
+        <td>ALL-CAPS, seed color</td>
+        <td>1.4rem / 700</td>
+      </tr>
+      <tr>
+        <td>Headline Large</td>
+        <td><code>.metui-headline-lg</code></td>
+        <td>Mixed case, seed border-bottom underline</td>
+        <td>1.2rem / 700</td>
+      </tr>
+      <tr>
+        <td>Headline Small</td>
+        <td><code>.metui-headline-sm</code></td>
+        <td>Mixed case, no decoration</td>
+        <td>1.0rem / 700</td>
+      </tr>
+      <tr>
+        <td>Title Medium</td>
+        <td><code>.metui-title-md</code></td>
+        <td><code>[ brackets ]</code>, cyan color</td>
+        <td>0.9rem / 700</td>
+      </tr>
+      <tr>
+        <td>Title Small</td>
+        <td><code>.metui-title-sm</code></td>
+        <td>Bold, no decoration</td>
+        <td>0.82rem / 700</td>
+      </tr>
+      <tr>
+        <td>Body Large</td>
+        <td><code>.metui-body-lg</code></td>
+        <td>Default fg, 1.7 line-height</td>
+        <td>0.9rem / 400</td>
+      </tr>
+      <tr>
+        <td>Body Medium</td>
+        <td><code>.metui-body-sm</code></td>
+        <td>fg-muted, secondary copy</td>
+        <td>0.82rem / 400</td>
+      </tr>
+      <tr>
+        <td>Label Large</td>
+        <td><code>.metui-label-md</code></td>
+        <td>ALL-CAPS, 2px tracking, fg-subtle</td>
+        <td>0.72rem / 700</td>
+      </tr>
+      <tr>
+        <td>Label Small</td>
+        <td><code>.metui-label-sm</code></td>
+        <td><code>// comment</code> prefix, ALL-CAPS</td>
+        <td>0.65rem / 400</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">CSS — all type classes</span>
+      <button class="code-block__copy" onclick="copyCode(this,'css-full')">COPY</button>
+    </div>
+    <pre id="code-css-full"><span class="hl-com">/* --- Display --- */</span>
+<span class="hl-cls">.metui-display-lg</span>  { <span class="hl-prop">font-size</span>:<span class="hl-num">2.0rem</span>; <span class="hl-prop">font-weight</span>:<span class="hl-num">700</span>; <span class="hl-prop">text-transform</span>:uppercase; <span class="hl-prop">color</span>:var(--seed); <span class="hl-prop">letter-spacing</span>:<span class="hl-num">2px</span>; <span class="hl-prop">line-height</span>:<span class="hl-num">1.1</span>; }
+<span class="hl-cls">.metui-display-sm</span>  { <span class="hl-prop">font-size</span>:<span class="hl-num">1.4rem</span>; <span class="hl-prop">font-weight</span>:<span class="hl-num">700</span>; <span class="hl-prop">text-transform</span>:uppercase; <span class="hl-prop">color</span>:var(--seed); <span class="hl-prop">letter-spacing</span>:<span class="hl-num">1px</span>;  <span class="hl-prop">line-height</span>:<span class="hl-num">1.2</span>; }
+<span class="hl-cls">.metui-mono-display</span>{ <span class="hl-prop">font-size</span>:<span class="hl-num">2.4rem</span>; <span class="hl-prop">font-weight</span>:<span class="hl-num">700</span>; <span class="hl-prop">color</span>:var(--seed); <span class="hl-prop">line-height</span>:<span class="hl-num">1</span>; <span class="hl-prop">letter-spacing</span>:<span class="hl-num">-1px</span>; }
+
+<span class="hl-com">/* --- Headline --- */</span>
+<span class="hl-cls">.metui-headline-lg</span> { <span class="hl-prop">font-size</span>:<span class="hl-num">1.2rem</span>; <span class="hl-prop">font-weight</span>:<span class="hl-num">700</span>; <span class="hl-prop">color</span>:var(--fg); <span class="hl-prop">border-bottom</span>:1px solid var(--seed); <span class="hl-prop">padding-bottom</span>:<span class="hl-num">4px</span>; <span class="hl-prop">line-height</span>:<span class="hl-num">1.3</span>; }
+<span class="hl-cls">.metui-headline-sm</span> { <span class="hl-prop">font-size</span>:<span class="hl-num">1.0rem</span>; <span class="hl-prop">font-weight</span>:<span class="hl-num">700</span>; <span class="hl-prop">color</span>:var(--fg); <span class="hl-prop">line-height</span>:<span class="hl-num">1.3</span>; }
+
+<span class="hl-com">/* --- Title --- */</span>
+<span class="hl-cls">.metui-title-md</span>    { <span class="hl-prop">font-size</span>:<span class="hl-num">0.9rem</span>;  <span class="hl-prop">font-weight</span>:<span class="hl-num">700</span>; <span class="hl-prop">color</span>:var(--cyan); <span class="hl-prop">line-height</span>:<span class="hl-num">1.4</span>; }
+<span class="hl-cls">.metui-title-md</span>::before { <span class="hl-prop">content</span>:<span class="hl-val">"[ "</span>; }
+<span class="hl-cls">.metui-title-md</span>::after  { <span class="hl-prop">content</span>:<span class="hl-val">" ]"</span>; }
+<span class="hl-cls">.metui-title-sm</span>    { <span class="hl-prop">font-size</span>:<span class="hl-num">0.82rem</span>; <span class="hl-prop">font-weight</span>:<span class="hl-num">700</span>; <span class="hl-prop">color</span>:var(--fg);   <span class="hl-prop">line-height</span>:<span class="hl-num">1.4</span>; }
+
+<span class="hl-com">/* --- Body --- */</span>
+<span class="hl-cls">.metui-body-lg</span>     { <span class="hl-prop">font-size</span>:<span class="hl-num">0.9rem</span>;  <span class="hl-prop">font-weight</span>:<span class="hl-num">400</span>; <span class="hl-prop">color</span>:var(--fg);       <span class="hl-prop">line-height</span>:<span class="hl-num">1.7</span>; }
+<span class="hl-cls">.metui-body-sm</span>     { <span class="hl-prop">font-size</span>:<span class="hl-num">0.82rem</span>; <span class="hl-prop">font-weight</span>:<span class="hl-num">400</span>; <span class="hl-prop">color</span>:var(--fg-muted); <span class="hl-prop">line-height</span>:<span class="hl-num">1.7</span>; }
+
+<span class="hl-com">/* --- Label --- */</span>
+<span class="hl-cls">.metui-label-md</span>    { <span class="hl-prop">font-size</span>:<span class="hl-num">0.72rem</span>; <span class="hl-prop">font-weight</span>:<span class="hl-num">700</span>; <span class="hl-prop">text-transform</span>:uppercase; <span class="hl-prop">letter-spacing</span>:<span class="hl-num">2px</span>; <span class="hl-prop">color</span>:var(--fg-subtle); <span class="hl-prop">line-height</span>:<span class="hl-num">1.4</span>; }
+<span class="hl-cls">.metui-label-sm</span>    { <span class="hl-prop">font-size</span>:<span class="hl-num">0.65rem</span>; <span class="hl-prop">font-weight</span>:<span class="hl-num">400</span>; <span class="hl-prop">text-transform</span>:uppercase; <span class="hl-prop">letter-spacing</span>:<span class="hl-num">2px</span>; <span class="hl-prop">color</span>:var(--fg-subtle); <span class="hl-prop">line-height</span>:<span class="hl-num">1.4</span>; }
+<span class="hl-cls">.metui-label-sm</span>::before { <span class="hl-prop">content</span>:<span class="hl-val">"// "</span>; }
+
+<span class="hl-com">/* --- Inline code --- */</span>
+<span class="hl-cls">.metui-code</span>        { <span class="hl-prop">font-size</span>:<span class="hl-num">0.82rem</span>; <span class="hl-prop">color</span>:var(--yellow); <span class="hl-prop">background</span>:var(--surface-2); <span class="hl-prop">padding</span>:<span class="hl-num">2px 6px</span>; }
+
+<span class="hl-com">/* --- Color modifiers --- */</span>
+<span class="hl-cls">.metui-text--seed</span>   { <span class="hl-prop">color</span>:var(--seed)      !important; }
+<span class="hl-cls">.metui-text--cyan</span>   { <span class="hl-prop">color</span>:var(--cyan)      !important; }
+<span class="hl-cls">.metui-text--green</span>  { <span class="hl-prop">color</span>:var(--green)     !important; }
+<span class="hl-cls">.metui-text--red</span>    { <span class="hl-prop">color</span>:var(--red)       !important; }
+<span class="hl-cls">.metui-text--yellow</span> { <span class="hl-prop">color</span>:var(--yellow)    !important; }
+<span class="hl-cls">.metui-text--muted</span>  { <span class="hl-prop">color</span>:var(--fg-muted)  !important; }
+<span class="hl-cls">.metui-text--subtle</span> { <span class="hl-prop">color</span>:var(--fg-subtle) !important; }</pre>
+  </div>
+</section>
+
+<!-- ============================================================
+     07.5 — COMPOSITION EXAMPLE
+     ============================================================ -->
+<section class="subsection" aria-labelledby="comp-label">
+  <div id="comp-label" class="subsection__label">07.5 — Composition Example</div>
+
+  <p class="metui-body-sm" style="margin-bottom:var(--sp-lg)">
+    A realistic card using only type classes — no custom color rules.
+  </p>
+
+  <div style="border:2px solid var(--tonal-40);padding:var(--sp-xl);max-width:520px;background:color-mix(in srgb,var(--seed) 4%,var(--bg));box-shadow:6px 6px 0 var(--surface-2)">
+    <span class="metui-label-sm">// DEPLOY_JOB</span>
+    <h2 class="metui-headline-lg" style="margin:var(--sp-sm) 0 var(--sp-md)">PROD_BUILD_v4.2.1</h2>
+    <h3 class="metui-title-md" style="margin-bottom:var(--sp-sm)">Pipeline_Status</h3>
+    <p class="metui-body-lg">
+      Build queued and pending gate approval. Stage environment validated.
+      All unit tests passing with <span class="metui-text--green metui-body-lg">0 failures</span>.
+    </p>
+    <p class="metui-body-sm" style="margin-top:var(--sp-sm)">
+      Initiated by <span class="metui-code">wyatt</span> · 4 minutes ago
+    </p>
+    <div style="margin-top:var(--sp-md);display:flex;gap:var(--sp-sm);flex-wrap:wrap">
+      <span class="metui-label-md" style="border:1px solid var(--green);padding:2px 8px;color:var(--green)">[OK] TESTS</span>
+      <span class="metui-label-md" style="border:1px solid var(--yellow);padding:2px 8px;color:var(--yellow)">[WR] STAGING</span>
+      <span class="metui-label-md" style="border:1px solid var(--outline);padding:2px 8px">PENDING PROD</span>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this,'comp')">COPY</button>
+    </div>
+    <pre id="code-comp"><span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-label-sm"</span><span class="hl-tag">&gt;</span>// DEPLOY_JOB<span class="hl-tag">&lt;/span&gt;</span>
+<span class="hl-tag">&lt;h2</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-headline-lg"</span><span class="hl-tag">&gt;</span>PROD_BUILD_v4.2.1<span class="hl-tag">&lt;/h2&gt;</span>
+<span class="hl-tag">&lt;h3</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-title-md"</span><span class="hl-tag">&gt;</span>Pipeline_Status<span class="hl-tag">&lt;/h3&gt;</span>
+<span class="hl-tag">&lt;p</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-body-lg"</span><span class="hl-tag">&gt;</span>
+  Build queued and pending gate approval.
+  All tests <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-text--green"</span><span class="hl-tag">&gt;</span>passing<span class="hl-tag">&lt;/span&gt;</span>.
+<span class="hl-tag">&lt;/p&gt;</span>
+<span class="hl-tag">&lt;p</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-body-sm"</span><span class="hl-tag">&gt;</span>
+  Initiated by <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-code"</span><span class="hl-tag">&gt;</span>wyatt<span class="hl-tag">&lt;/span&gt;</span> · 4 minutes ago
+<span class="hl-tag">&lt;/p&gt;</span></pre>
+  </div>
+</section>
+
 <script>
+function copyCode(btn, id) {
+  const pre = document.getElementById('code-' + id);
+  if (!pre) return;
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'COPIED';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'COPY';
+      btn.classList.remove('copied');
+    }, 1800);
+  });
+}
+
 window.addEventListener('message', e => {
   if (e.data?.type !== 'METUI_THEME') return;
   const root = document.documentElement;
