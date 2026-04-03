@@ -6,25 +6,753 @@
 <title>METUI | 04_SELECTION</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="metui-base.css">
+<style>
+
+/* ============================================================
+   METUI SELECTION COMPONENTS
+
+   .metui-checkbox     — checkbox control
+   .metui-radio        — radio group
+   .metui-switch       — toggle switch
+   .metui-chip-group   — filter / input chips
+   .metui-chip
+   .metui-slider       — range slider
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   SHARED: visually hidden native input (accessible base)
+   ---------------------------------------------------------- */
+.metui-visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ----------------------------------------------------------
+   CHECKBOX
+   <label class="metui-checkbox [checked] [indeterminate] [disabled]">
+     <input type="checkbox" class="metui-visually-hidden">
+     <span class="metui-checkbox__box"></span>
+     <span class="metui-checkbox__label">LABEL</span>
+   </label>
+   ---------------------------------------------------------- */
+.metui-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  min-height: var(--touch-target);
+  padding: 0 var(--sp-xs);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  transition: color var(--dur-fast) var(--ease-tui);
+  user-select: none;
+}
+.metui-checkbox:hover { color: var(--fg); }
+.metui-checkbox.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+.metui-checkbox__box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--outline);
+  background: transparent;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: transparent;
+  transition:
+    border-color var(--dur-fast) var(--ease-tui),
+    background   var(--dur-fast) var(--ease-tui),
+    color        var(--dur-fast) var(--ease-tui);
+}
+
+/* States via input:checked + sibling — and also via JS class for demo */
+.metui-checkbox input:checked ~ .metui-checkbox__box,
+.metui-checkbox.checked .metui-checkbox__box {
+  border-color: var(--seed);
+  background: var(--tonal-20);
+  color: var(--seed);
+}
+.metui-checkbox input:checked ~ .metui-checkbox__box::before,
+.metui-checkbox.checked .metui-checkbox__box::before { content: "X"; }
+
+.metui-checkbox.indeterminate .metui-checkbox__box {
+  border-color: var(--yellow);
+  background: color-mix(in srgb, var(--yellow) 15%, var(--bg));
+  color: var(--yellow);
+}
+.metui-checkbox.indeterminate .metui-checkbox__box::before { content: "-"; }
+
+/* focus ring on the hidden input, shown via label */
+.metui-checkbox input:focus-visible ~ .metui-checkbox__box {
+  outline: 2px solid var(--seed);
+  outline-offset: 2px;
+}
+
+.metui-checkbox__label { line-height: 1; }
+
+/* ----------------------------------------------------------
+   RADIO GROUP
+   <fieldset class="metui-radio-group">
+     <legend class="metui-radio-group__legend">LABEL</legend>
+     <label class="metui-radio [checked]">
+       <input type="radio" class="metui-visually-hidden">
+       <span class="metui-radio__dot"></span>
+       <span class="metui-radio__label">OPTION</span>
+     </label>
+   </fieldset>
+   ---------------------------------------------------------- */
+.metui-radio-group {
+  border: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.metui-radio-group__legend {
+  font-size: 0.65rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: var(--sp-sm);
+  padding: 0;
+  float: none;
+}
+.metui-radio-group--horizontal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+}
+
+.metui-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  min-height: var(--touch-target);
+  padding: 0 var(--sp-xs);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  transition: color var(--dur-fast) var(--ease-tui);
+  user-select: none;
+}
+.metui-radio:hover { color: var(--fg); }
+.metui-radio.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+.metui-radio__dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--outline);
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: 0.55rem;
+  color: transparent;
+  transition:
+    border-color var(--dur-fast) var(--ease-tui),
+    color        var(--dur-fast) var(--ease-tui);
+}
+.metui-radio input:checked ~ .metui-radio__dot,
+.metui-radio.checked .metui-radio__dot {
+  border-color: var(--seed);
+  color: var(--seed);
+}
+.metui-radio input:checked ~ .metui-radio__dot::before,
+.metui-radio.checked .metui-radio__dot::before {
+  content: "●";
+  font-size: 0.7rem;
+}
+.metui-radio input:focus-visible ~ .metui-radio__dot {
+  outline: 2px solid var(--seed);
+  outline-offset: 2px;
+}
+
+/* ----------------------------------------------------------
+   SWITCH
+   <label class="metui-switch [on] [disabled]">
+     <input type="checkbox" class="metui-visually-hidden" role="switch">
+     <span class="metui-switch__track">
+       <span class="metui-switch__thumb"></span>
+     </span>
+     <span class="metui-switch__label">LABEL</span>
+   </label>
+   ---------------------------------------------------------- */
+.metui-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-md);
+  min-height: var(--touch-target);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  transition: color var(--dur-fast) var(--ease-tui);
+  user-select: none;
+}
+.metui-switch:hover { color: var(--fg); }
+.metui-switch.disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+
+.metui-switch__track {
+  display: flex;
+  align-items: center;
+  width: 52px;
+  height: 24px;
+  border: 2px solid var(--outline);
+  background: transparent;
+  padding: 2px;
+  flex-shrink: 0;
+  transition:
+    border-color var(--dur-std) var(--ease-tui),
+    background   var(--dur-std) var(--ease-tui);
+}
+.metui-switch__thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--outline);
+  flex-shrink: 0;
+  transition:
+    transform   var(--dur-std) var(--ease-tui),
+    background  var(--dur-std) var(--ease-tui);
+}
+
+/* ON state */
+.metui-switch input:checked ~ .metui-switch__track,
+.metui-switch.on .metui-switch__track {
+  border-color: var(--seed);
+  background: var(--tonal-20);
+}
+.metui-switch input:checked ~ .metui-switch__track .metui-switch__thumb,
+.metui-switch.on .metui-switch__track .metui-switch__thumb {
+  transform: translateX(28px);
+  background: var(--seed);
+}
+.metui-switch input:focus-visible ~ .metui-switch__track {
+  outline: 2px solid var(--seed);
+  outline-offset: 2px;
+}
+
+.metui-switch__state {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--fg-subtle);
+  min-width: 24px;
+}
+.metui-switch.on .metui-switch__state { color: var(--green); }
+
+/* ----------------------------------------------------------
+   CHIPS
+   <div class="metui-chip-group">
+     <button class="metui-chip [active]">
+   ---------------------------------------------------------- */
+.metui-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+}
+
+.metui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  min-height: var(--touch-target);
+  padding: 0 var(--sp-md);
+  border: 1px solid var(--outline);
+  background: transparent;
+  color: var(--fg-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  cursor: pointer;
+  border-radius: 999px;
+  transition:
+    color        var(--dur-fast) var(--ease-tui),
+    background   var(--dur-fast) var(--ease-tui),
+    border-color var(--dur-fast) var(--ease-tui);
+  user-select: none;
+}
+.metui-chip::before { content: "# "; color: var(--fg-subtle); font-size: 0.72rem; }
+.metui-chip:hover { color: var(--seed); border-color: var(--seed); background: var(--tonal-10); }
+.metui-chip:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
+.metui-chip.active {
+  border-color: var(--seed);
+  background: var(--seed);
+  color: var(--bg);
+  font-weight: 700;
+}
+.metui-chip.active::before { color: var(--bg); opacity: 0.6; }
+
+/* Input chip (dismissible) */
+.metui-chip--input { border-radius: 2px; }
+.metui-chip--input::before { content: none; }
+.metui-chip__dismiss {
+  margin-left: var(--sp-xs);
+  opacity: 0.6;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+.metui-chip--input:hover .metui-chip__dismiss { opacity: 1; }
+
+/* ----------------------------------------------------------
+   SLIDER
+   <div class="metui-slider-wrap">
+     <label class="metui-slider__label">LABEL</label>
+     <div class="metui-slider__row">
+       <input type="range" class="metui-slider">
+       <span class="metui-slider__value">50</span>
+   ---------------------------------------------------------- */
+.metui-slider-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+.metui-slider__label {
+  font-size: 0.65rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.metui-slider__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  min-height: var(--touch-target);
+}
+.metui-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--surface-2);
+  outline: none;
+  cursor: pointer;
+}
+.metui-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--seed);
+  border: 2px solid var(--bg);
+  cursor: pointer;
+  box-shadow: 0 0 0 2px var(--seed);
+  transition: box-shadow var(--dur-fast) var(--ease-tui);
+}
+.metui-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--seed);
+  border: 2px solid var(--bg);
+  cursor: pointer;
+  box-shadow: 0 0 0 2px var(--seed);
+}
+.metui-slider:focus-visible {
+  outline: 2px solid var(--seed);
+  outline-offset: 4px;
+}
+.metui-slider__value {
+  width: 36px;
+  text-align: right;
+  font-size: 0.82rem;
+  color: var(--seed);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* list helpers */
+.control-list {
+  display: flex;
+  flex-direction: column;
+}
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+</style>
 </head>
 <body>
+
 <header class="section-header">
-  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0</div>
+  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0 / 04</div>
   <h1 class="section-header__title">* 04_SELECTION</h1>
-  <p class="section-header__desc">Checkboxes, radio buttons, switches, and chip inputs.</p>
+  <p class="section-header__desc">Checkboxes, radios, switches, chips, and sliders. All use native inputs for accessibility.</p>
 </header>
-<div class="demo-box">
-  <div class="demo-box__label">// SECTION_STUB</div>
-  <p style="color:var(--fg-muted);font-size:0.85rem;margin-bottom:var(--sp-md)">
-    This section is queued for implementation. Drop the completed
-    <code>04-selection.html</code> into the <code>sections/</code> folder to replace this stub.
-  </p>
-  <div style="border-left:3px solid var(--tonal-40);padding:var(--sp-md);background:color-mix(in srgb,var(--seed) 4%,var(--bg))">
-    <div style="font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">Contents_Planned</div>
-    <p style="font-size:0.82rem;color:var(--fg-muted)">Checkboxes, radio buttons, switches, and chip inputs.</p>
+
+<!-- CHECKBOXES -->
+<section class="subsection" aria-labelledby="checkbox-label">
+  <div id="checkbox-label" class="subsection__label">04.1 — Checkbox</div>
+
+  <div class="grid grid--2col">
+    <div>
+      <div class="control-group" role="group" aria-label="Checkbox states">
+        <label class="metui-checkbox checked" onclick="toggleCheck(this)">
+          <input type="checkbox" class="metui-visually-hidden" checked>
+          <span class="metui-checkbox__box"></span>
+          <span class="metui-checkbox__label">ENABLE_OS_ENCRYPTION</span>
+        </label>
+        <label class="metui-checkbox" onclick="toggleCheck(this)">
+          <input type="checkbox" class="metui-visually-hidden">
+          <span class="metui-checkbox__box"></span>
+          <span class="metui-checkbox__label">ALLOW_UNTRUSTED_PACKAGES</span>
+        </label>
+        <label class="metui-checkbox indeterminate">
+          <input type="checkbox" class="metui-visually-hidden">
+          <span class="metui-checkbox__box"></span>
+          <span class="metui-checkbox__label">SYNC_PARTIAL — indeterminate</span>
+        </label>
+        <label class="metui-checkbox disabled">
+          <input type="checkbox" class="metui-visually-hidden" disabled>
+          <span class="metui-checkbox__box"></span>
+          <span class="metui-checkbox__label">LOCKED_SETTING — disabled</span>
+        </label>
+      </div>
+    </div>
+
+    <table class="spec-table">
+      <thead>
+        <tr><th>State</th><th>Visual</th><th>Color</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Unchecked</td>
+          <td><code>[ ]</code></td>
+          <td><code>--outline</code></td>
+        </tr>
+        <tr>
+          <td>Checked</td>
+          <td><code>[X]</code></td>
+          <td><code>--seed</code></td>
+        </tr>
+        <tr>
+          <td>Indeterminate</td>
+          <td><code>[-]</code></td>
+          <td><code>--yellow</code></td>
+        </tr>
+        <tr>
+          <td>Disabled</td>
+          <td><code>[ ]</code></td>
+          <td>40% opacity</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-</div>
+</section>
+
+<!-- RADIO BUTTONS -->
+<section class="subsection" aria-labelledby="radio-label">
+  <div id="radio-label" class="subsection__label">04.2 — Radio Group</div>
+
+  <div class="grid grid--2col">
+    <div>
+      <!-- Vertical -->
+      <fieldset class="metui-radio-group" aria-label="Log level selection">
+        <legend class="metui-radio-group__legend">LOG_LEVEL</legend>
+        <label class="metui-radio" onclick="radioSelect(this, 'log-group')">
+          <input type="radio" name="log-group" class="metui-visually-hidden" value="debug">
+          <span class="metui-radio__dot"></span>
+          <span class="metui-radio__label">DEBUG</span>
+        </label>
+        <label class="metui-radio checked" onclick="radioSelect(this, 'log-group')">
+          <input type="radio" name="log-group" class="metui-visually-hidden" value="info" checked>
+          <span class="metui-radio__dot"></span>
+          <span class="metui-radio__label">INFO</span>
+        </label>
+        <label class="metui-radio" onclick="radioSelect(this, 'log-group')">
+          <input type="radio" name="log-group" class="metui-visually-hidden" value="warn">
+          <span class="metui-radio__dot"></span>
+          <span class="metui-radio__label">WARN</span>
+        </label>
+        <label class="metui-radio" onclick="radioSelect(this, 'log-group')">
+          <input type="radio" name="log-group" class="metui-visually-hidden" value="error">
+          <span class="metui-radio__dot"></span>
+          <span class="metui-radio__label">ERROR</span>
+        </label>
+        <label class="metui-radio disabled">
+          <input type="radio" name="log-group" class="metui-visually-hidden" value="silent" disabled>
+          <span class="metui-radio__dot"></span>
+          <span class="metui-radio__label">SILENT — disabled</span>
+        </label>
+      </fieldset>
+    </div>
+
+    <div>
+      <!-- Horizontal -->
+      <fieldset class="metui-radio-group" aria-label="Theme selection">
+        <legend class="metui-radio-group__legend">DISPLAY_MODE</legend>
+        <div class="metui-radio-group metui-radio-group--horizontal">
+          <label class="metui-radio checked" onclick="radioSelect(this, 'mode-group')">
+            <input type="radio" name="mode-group" class="metui-visually-hidden" value="compact" checked>
+            <span class="metui-radio__dot"></span>
+            <span class="metui-radio__label">COMPACT</span>
+          </label>
+          <label class="metui-radio" onclick="radioSelect(this, 'mode-group')">
+            <input type="radio" name="mode-group" class="metui-visually-hidden" value="standard">
+            <span class="metui-radio__dot"></span>
+            <span class="metui-radio__label">STANDARD</span>
+          </label>
+          <label class="metui-radio" onclick="radioSelect(this, 'mode-group')">
+            <input type="radio" name="mode-group" class="metui-visually-hidden" value="relaxed">
+            <span class="metui-radio__dot"></span>
+            <span class="metui-radio__label">RELAXED</span>
+          </label>
+        </div>
+      </fieldset>
+    </div>
+  </div>
+</section>
+
+<!-- SWITCHES -->
+<section class="subsection" aria-labelledby="switch-label">
+  <div id="switch-label" class="subsection__label">04.3 — Switch (Toggle)</div>
+
+  <div class="grid grid--2col">
+    <div class="control-group" role="group" aria-label="System switches">
+      <label class="metui-switch on" onclick="toggleSwitch(this)">
+        <input type="checkbox" class="metui-visually-hidden" role="switch" checked>
+        <span class="metui-switch__track">
+          <span class="metui-switch__thumb"></span>
+        </span>
+        <span class="metui-switch__label">NETWORK_INTERFACE</span>
+        <span class="metui-switch__state">ON</span>
+      </label>
+      <label class="metui-switch" onclick="toggleSwitch(this)">
+        <input type="checkbox" class="metui-visually-hidden" role="switch">
+        <span class="metui-switch__track">
+          <span class="metui-switch__thumb"></span>
+        </span>
+        <span class="metui-switch__label">VERBOSE_LOGGING</span>
+        <span class="metui-switch__state">OFF</span>
+      </label>
+      <label class="metui-switch on" onclick="toggleSwitch(this)">
+        <input type="checkbox" class="metui-visually-hidden" role="switch" checked>
+        <span class="metui-switch__track">
+          <span class="metui-switch__thumb"></span>
+        </span>
+        <span class="metui-switch__label">AUTO_UPDATES</span>
+        <span class="metui-switch__state">ON</span>
+      </label>
+      <label class="metui-switch disabled">
+        <input type="checkbox" class="metui-visually-hidden" role="switch" disabled>
+        <span class="metui-switch__track">
+          <span class="metui-switch__thumb"></span>
+        </span>
+        <span class="metui-switch__label">KERNEL_DEBUG — disabled</span>
+        <span class="metui-switch__state">OFF</span>
+      </label>
+    </div>
+
+    <table class="spec-table">
+      <thead>
+        <tr><th>MD3 Concept</th><th>TUI Treatment</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Track OFF</td>
+          <td>Empty rect, <code>--outline</code> border, thumb left</td>
+        </tr>
+        <tr>
+          <td>Track ON</td>
+          <td><code>--tonal-20</code> bg, <code>--seed</code> border, thumb right</td>
+        </tr>
+        <tr>
+          <td>Thumb</td>
+          <td>Square block — maintains hardware TUI feel</td>
+        </tr>
+        <tr>
+          <td>Motion</td>
+          <td><code>steps(4)</code> transition — no smooth slide</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- CHIPS -->
+<section class="subsection" aria-labelledby="chips-label">
+  <div id="chips-label" class="subsection__label">04.4 — Chips</div>
+
+  <div style="display:flex;flex-direction:column;gap:var(--sp-xl)">
+
+    <!-- Filter chips -->
+    <div>
+      <div style="font-size:0.6rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">
+        // FILTER_CHIPS (toggle)
+      </div>
+      <div class="metui-chip-group" role="group" aria-label="Log filter chips">
+        <button class="metui-chip active" onclick="toggleChip(this)" aria-pressed="true">kernel</button>
+        <button class="metui-chip" onclick="toggleChip(this)" aria-pressed="false">network</button>
+        <button class="metui-chip" onclick="toggleChip(this)" aria-pressed="false">auth</button>
+        <button class="metui-chip active" onclick="toggleChip(this)" aria-pressed="true">errors</button>
+        <button class="metui-chip" onclick="toggleChip(this)" aria-pressed="false">warnings</button>
+        <button class="metui-chip" onclick="toggleChip(this)" aria-pressed="false">metrics</button>
+      </div>
+    </div>
+
+    <!-- Input chips (dismissible) -->
+    <div>
+      <div style="font-size:0.6rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">
+        // INPUT_CHIPS (dismissible)
+      </div>
+      <div class="metui-chip-group" id="input-chips" role="group" aria-label="Active tags">
+        <button class="metui-chip metui-chip--input active"
+                onclick="dismissChip(this)" aria-label="Remove tag: wyatt">
+          wyatt <span class="metui-chip__dismiss" aria-hidden="true">×</span>
+        </button>
+        <button class="metui-chip metui-chip--input active"
+                onclick="dismissChip(this)" aria-label="Remove tag: root">
+          root <span class="metui-chip__dismiss" aria-hidden="true">×</span>
+        </button>
+        <button class="metui-chip metui-chip--input active"
+                onclick="dismissChip(this)" aria-label="Remove tag: sys">
+          sys <span class="metui-chip__dismiss" aria-hidden="true">×</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SLIDERS -->
+<section class="subsection" aria-labelledby="slider-label">
+  <div id="slider-label" class="subsection__label">04.5 — Slider</div>
+
+  <div style="display:flex;flex-direction:column;gap:var(--sp-xl);max-width:480px">
+
+    <div class="metui-slider-wrap">
+      <label class="metui-slider__label" for="slider-vol">VOLUME_LEVEL</label>
+      <div class="metui-slider__row">
+        <input type="range" class="metui-slider" id="slider-vol"
+               min="0" max="100" value="72"
+               oninput="document.getElementById('vol-val').textContent = this.value"
+               aria-label="Volume level">
+        <span class="metui-slider__value" id="vol-val">72</span>
+      </div>
+    </div>
+
+    <div class="metui-slider-wrap">
+      <label class="metui-slider__label" for="slider-cpu">CPU_THROTTLE_%</label>
+      <div class="metui-slider__row">
+        <input type="range" class="metui-slider" id="slider-cpu"
+               min="0" max="100" value="45"
+               oninput="document.getElementById('cpu-val').textContent = this.value"
+               aria-label="CPU throttle percentage">
+        <span class="metui-slider__value" id="cpu-val">45</span>
+      </div>
+    </div>
+
+    <div class="metui-slider-wrap">
+      <label class="metui-slider__label" for="slider-mem">MEMORY_LIMIT_GB</label>
+      <div class="metui-slider__row">
+        <input type="range" class="metui-slider" id="slider-mem"
+               min="1" max="64" value="16"
+               oninput="document.getElementById('mem-val').textContent = this.value"
+               aria-label="Memory limit in gigabytes">
+        <span class="metui-slider__value" id="mem-val">16</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SPEC TABLE -->
+<section class="subsection" aria-labelledby="spec-label">
+  <div id="spec-label" class="subsection__label">04.6 — MD3 Mapping</div>
+  <table class="spec-table">
+    <thead>
+      <tr><th>MD3 Component</th><th>METUI Class</th><th>TUI Treatment</th><th>Character Shorthand</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Checkbox</td>
+        <td><code>.metui-checkbox</code></td>
+        <td>Square bracket glyph</td>
+        <td><code>[ ]</code> / <code>[X]</code> / <code>[-]</code></td>
+      </tr>
+      <tr>
+        <td>Radio Button</td>
+        <td><code>.metui-radio</code></td>
+        <td>Circle border, bullet fill</td>
+        <td><code>○</code> / <code>●</code></td>
+      </tr>
+      <tr>
+        <td>Switch</td>
+        <td><code>.metui-switch</code></td>
+        <td>Rect track + square thumb</td>
+        <td><code>[  □]</code> → <code>[□  ]</code></td>
+      </tr>
+      <tr>
+        <td>Filter Chip</td>
+        <td><code>.metui-chip</code></td>
+        <td>Pill border, hash prefix</td>
+        <td><code># tag</code></td>
+      </tr>
+      <tr>
+        <td>Input Chip</td>
+        <td><code>.metui-chip--input</code></td>
+        <td>Square border, × dismiss</td>
+        <td><code>tag ×</code></td>
+      </tr>
+      <tr>
+        <td>Slider</td>
+        <td><code>.metui-slider</code></td>
+        <td>Range input, square thumb</td>
+        <td>Value shown as right-aligned number</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
 <script>
+/* Checkbox */
+function toggleCheck(label) {
+  if (label.classList.contains('indeterminate') || label.classList.contains('disabled')) return;
+  label.classList.toggle('checked');
+  const input = label.querySelector('input');
+  if (input) input.checked = label.classList.contains('checked');
+}
+
+/* Radio */
+function radioSelect(label, groupName) {
+  if (label.classList.contains('disabled')) return;
+  const group = label.closest('fieldset') || document;
+  group.querySelectorAll('.metui-radio').forEach(r => r.classList.remove('checked'));
+  label.classList.add('checked');
+  const input = label.querySelector('input');
+  if (input) input.checked = true;
+}
+
+/* Switch */
+function toggleSwitch(label) {
+  if (label.classList.contains('disabled')) return;
+  const isOn = label.classList.toggle('on');
+  const input = label.querySelector('input');
+  if (input) input.checked = isOn;
+  const stateEl = label.querySelector('.metui-switch__state');
+  if (stateEl) stateEl.textContent = isOn ? 'ON' : 'OFF';
+}
+
+/* Filter chips */
+function toggleChip(btn) {
+  const isActive = btn.classList.toggle('active');
+  btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+}
+
+/* Input chips */
+function dismissChip(btn) {
+  btn.style.transform = 'scale(0)';
+  btn.style.opacity = '0';
+  btn.style.transition = 'transform 150ms steps(3), opacity 150ms';
+  setTimeout(() => btn.remove(), 160);
+}
+
+/* Theme receiver */
 window.addEventListener('message', e => {
   if (e.data?.type !== 'METUI_THEME') return;
   const root = document.documentElement;
