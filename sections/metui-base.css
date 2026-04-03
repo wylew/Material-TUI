@@ -1,0 +1,174 @@
+/* ============================================================
+   METUI SECTION BASE — sections/metui-base.css
+   Import this in every section file.
+   Tokens are injected from the shell via postMessage,
+   but these defaults make sections work standalone too.
+   ============================================================ */
+
+:root {
+  --seed:       #cba6f7;
+  --tonal-100:  var(--seed);
+  --tonal-80:   color-mix(in srgb, var(--seed) 80%, #1e1e2e);
+  --tonal-60:   color-mix(in srgb, var(--seed) 60%, #1e1e2e);
+  --tonal-40:   color-mix(in srgb, var(--seed) 40%, #1e1e2e);
+  --tonal-20:   color-mix(in srgb, var(--seed) 20%, #1e1e2e);
+  --tonal-10:   color-mix(in srgb, var(--seed) 10%, #1e1e2e);
+
+  --bg:         #1e1e2e;
+  --surface:    #181825;
+  --surface-2:  #313244;
+  --outline:    #585b70;
+  --outline-hi: #7f849c;
+
+  --fg:         #cdd6f4;
+  --fg-muted:   #a6adc8;
+  --fg-subtle:  #585b70;
+
+  --green:      #a6e3a1;
+  --red:        #f38ba8;
+  --yellow:     #f9e2af;
+  --cyan:       #89dceb;
+
+  --dur-fast:   100ms;
+  --dur-std:    200ms;
+  --ease-tui:   steps(4);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 16px;
+  --sp-lg: 24px;
+  --sp-xl: 32px;
+
+  --touch-target: 48px;
+}
+
+/* --- RESET --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  padding: var(--sp-xl);
+}
+
+/* --- SECTION LAYOUT --- */
+.section-header {
+  margin-bottom: var(--sp-xl);
+  padding-bottom: var(--sp-md);
+  border-bottom: 2px solid var(--outline);
+}
+.section-header__eyebrow {
+  font-size: 0.65rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: var(--sp-xs);
+}
+.section-header__title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--seed);
+}
+.section-header__desc {
+  font-size: 0.82rem;
+  color: var(--fg-muted);
+  margin-top: var(--sp-xs);
+}
+
+.subsection { margin-bottom: var(--sp-xl); }
+.subsection__label {
+  font-size: 0.65rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: var(--sp-md);
+  padding-bottom: var(--sp-xs);
+  border-bottom: 1px solid var(--surface-2);
+}
+
+/* Adaptive grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: var(--sp-lg);
+}
+.grid--wide { grid-template-columns: 1fr; }
+.grid--2col { grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); }
+
+/* --- SPEC TABLE --- */
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.spec-table th {
+  text-align: left;
+  color: var(--fg-subtle);
+  border-bottom: 2px solid var(--outline);
+  padding: var(--sp-sm) var(--sp-md);
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  letter-spacing: 1px;
+}
+.spec-table td {
+  padding: var(--sp-sm) var(--sp-md);
+  border-bottom: 1px solid var(--surface-2);
+  vertical-align: top;
+}
+.spec-table tr:last-child td { border-bottom: none; }
+.spec-table code {
+  color: var(--yellow);
+  background: var(--surface-2);
+  padding: 1px 5px;
+  font-size: 0.78rem;
+}
+
+/* --- DEMO BOX --- */
+.demo-box {
+  border: 1px solid var(--outline);
+  padding: var(--sp-lg);
+  background: color-mix(in srgb, var(--seed) 3%, var(--bg));
+  margin-bottom: var(--sp-md);
+}
+.demo-box__label {
+  font-size: 0.6rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: var(--sp-md);
+}
+
+/* --- INLINE CODE --- */
+code {
+  color: var(--yellow);
+  background: var(--surface-2);
+  padding: 1px 5px;
+  font-size: 0.82rem;
+}
+
+/* --- CURSOR BLINK --- */
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+.cursor {
+  display: inline-block;
+  width: 9px;
+  height: 1em;
+  background: var(--seed);
+  vertical-align: middle;
+  animation: blink 1s infinite;
+}
+
+/* --- THEME RECEIVER (postMessage from shell) --- */
+/* JS snippet to include at bottom of every section body: */
+/*
+<script>
+window.addEventListener('message', e => {
+  if (e.data?.type !== 'METUI_THEME') return;
+  const root = document.documentElement;
+  Object.entries(e.data.theme).forEach(([k,v]) => root.style.setProperty(k, v));
+});
+</script>
+*/

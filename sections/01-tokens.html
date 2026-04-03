@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>METUI | 01_DESIGN_TOKENS</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="metui-base.css">
+<style>
+
+/* Tonal strip */
+.tonal-strip {
+  display: flex;
+  height: 56px;
+  border: 1px solid var(--outline);
+  overflow: hidden;
+  margin-bottom: var(--sp-md);
+}
+.tonal-strip__swatch {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  transition: flex var(--dur-std) var(--ease-smooth);
+}
+.tonal-strip__swatch:hover { flex: 2; }
+
+/* Color role grid */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-lg);
+}
+.color-chip {
+  padding: var(--sp-md);
+  border: 1px solid var(--outline);
+}
+.color-chip__swatch {
+  width: 100%;
+  height: 32px;
+  margin-bottom: var(--sp-sm);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.color-chip__name {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 2px;
+}
+.color-chip__var {
+  font-size: 0.62rem;
+  color: var(--fg-subtle);
+}
+
+/* Elevation demos */
+.elevation-row {
+  display: flex;
+  gap: var(--sp-lg);
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding: var(--sp-lg) 0;
+}
+.elevation-demo {
+  padding: var(--sp-md) var(--sp-lg);
+  font-size: 0.75rem;
+  text-align: center;
+  min-width: 120px;
+}
+.elevation-demo__label {
+  font-size: 0.6rem;
+  color: var(--fg-subtle);
+  margin-top: var(--sp-sm);
+}
+
+/* Motion tokens demo */
+.motion-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+.motion-demo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-lg);
+  padding: var(--sp-sm) 0;
+  border-bottom: 1px solid var(--surface-2);
+  min-height: var(--touch-target);
+}
+.motion-demo__bar {
+  width: 0;
+  height: 4px;
+  background: var(--seed);
+}
+.motion-demo:hover .motion-demo__bar { width: 120px; }
+.motion-demo--fast:hover .motion-demo__bar    { transition: width var(--dur-fast) var(--ease-tui); }
+.motion-demo--std:hover .motion-demo__bar     { transition: width var(--dur-std) var(--ease-tui); }
+.motion-demo--smooth:hover .motion-demo__bar  { transition: width 300ms var(--ease-smooth); }
+.motion-demo__name { font-size: 0.78rem; color: var(--fg); min-width: 140px; }
+.motion-demo__spec { font-size: 0.7rem; color: var(--fg-subtle); }
+</style>
+</head>
+<body>
+
+<header class="section-header">
+  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0 / 01</div>
+  <h1 class="section-header__title">> DESIGN_TOKENS</h1>
+  <p class="section-header__desc">All values are CSS custom properties. Change <code>--seed</code> to retheme everything.</p>
+</header>
+
+<!-- TONAL PALETTE -->
+<section class="subsection" aria-labelledby="tonal-label">
+  <div id="tonal-label" class="subsection__label">01.1 — Tonal Palette (hover to expand)</div>
+  <div class="tonal-strip" aria-label="Tonal palette visualization">
+    <div class="tonal-strip__swatch" style="background:var(--tonal-100);color:var(--bg)">T-100</div>
+    <div class="tonal-strip__swatch" style="background:var(--tonal-80); color:var(--bg)">T-80</div>
+    <div class="tonal-strip__swatch" style="background:var(--tonal-60)">T-60</div>
+    <div class="tonal-strip__swatch" style="background:var(--tonal-40)">T-40</div>
+    <div class="tonal-strip__swatch" style="background:var(--tonal-20)">T-20</div>
+    <div class="tonal-strip__swatch" style="background:var(--tonal-10)">T-10</div>
+    <div class="tonal-strip__swatch" style="background:var(--bg);border-left:1px solid var(--outline)">T-0</div>
+  </div>
+
+  <table class="spec-table">
+    <thead>
+      <tr><th>Level</th><th>CSS Variable</th><th>Definition</th><th>Use Case</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>T-100</td><td><code>--tonal-100</code></td><td>= <code>--seed</code></td><td>Filled buttons, active indicators</td></tr>
+      <tr><td>T-80</td><td><code>--tonal-80</code></td><td>color-mix 80%</td><td>Hover states on filled elements</td></tr>
+      <tr><td>T-60</td><td><code>--tonal-60</code></td><td>color-mix 60%</td><td>Active/pressed states</td></tr>
+      <tr><td>T-40</td><td><code>--tonal-40</code></td><td>color-mix 40%</td><td>Elevated card borders</td></tr>
+      <tr><td>T-20</td><td><code>--tonal-20</code></td><td>color-mix 20%</td><td>Active nav background</td></tr>
+      <tr><td>T-10</td><td><code>--tonal-10</code></td><td>color-mix 10%</td><td>Outlined button hover bg</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- COLOR ROLES -->
+<section class="subsection" aria-labelledby="colors-label">
+  <div id="colors-label" class="subsection__label">01.2 — Color Roles</div>
+  <div class="color-grid">
+    <div class="color-chip">
+      <div class="color-chip__swatch" style="background:var(--seed)"></div>
+      <div class="color-chip__name">Seed / Primary</div>
+      <div class="color-chip__var">--seed</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-chip__swatch" style="background:var(--bg)"></div>
+      <div class="color-chip__name">Background</div>
+      <div class="color-chip__var">--bg</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-chip__swatch" style="background:var(--surface)"></div>
+      <div class="color-chip__name">Surface</div>
+      <div class="color-chip__var">--surface</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-chip__swatch" style="background:var(--surface-2)"></div>
+      <div class="color-chip__name">Surface-2</div>
+      <div class="color-chip__var">--surface-2</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-chip__swatch" style="background:var(--fg)"></div>
+      <div class="color-chip__name">Foreground</div>
+      <div class="color-chip__var">--fg</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-chip__swatch" style="background:var(--fg-muted)"></div>
+      <div class="color-chip__name">Fg Muted</div>
+      <div class="color-chip__var">--fg-muted</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-chip__swatch" style="background:var(--green)"></div>
+      <div class="color-chip__name">Success</div>
+      <div class="color-chip__var">--green</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-chip__swatch" style="background:var(--red)"></div>
+      <div class="color-chip__name">Error</div>
+      <div class="color-chip__var">--red</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-chip__swatch" style="background:var(--yellow)"></div>
+      <div class="color-chip__name">Warning</div>
+      <div class="color-chip__var">--yellow</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-chip__swatch" style="background:var(--cyan)"></div>
+      <div class="color-chip__name">Info / Accent</div>
+      <div class="color-chip__var">--cyan</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-chip__swatch" style="background:var(--outline)"></div>
+      <div class="color-chip__name">Outline</div>
+      <div class="color-chip__var">--outline</div>
+    </div>
+    <div class="color-chip">
+      <div class="color-chip__swatch" style="background:var(--outline-hi)"></div>
+      <div class="color-chip__name">Outline Hi</div>
+      <div class="color-chip__var">--outline-hi</div>
+    </div>
+  </div>
+</section>
+
+<!-- ELEVATION -->
+<section class="subsection" aria-labelledby="elev-label">
+  <div id="elev-label" class="subsection__label">01.3 — Elevation System</div>
+  <div class="demo-box">
+    <div class="elevation-row">
+      <div>
+        <div class="elevation-demo" style="border:1px solid var(--outline)">FLAT</div>
+        <div class="elevation-demo__label">No elevation</div>
+      </div>
+      <div>
+        <div class="elevation-demo" style="border:1px solid var(--tonal-40);box-shadow:4px 4px 0 var(--surface-2)">BLOCK_SHADOW</div>
+        <div class="elevation-demo__label">+1 elevation</div>
+      </div>
+      <div>
+        <div class="elevation-demo" style="border:2px solid var(--seed);box-shadow:6px 6px 0 var(--tonal-20)">FOCUSED</div>
+        <div class="elevation-demo__label">+2 elevation</div>
+      </div>
+      <div>
+        <div class="elevation-demo" style="border:2px double var(--cyan)">DOUBLE_BORDER</div>
+        <div class="elevation-demo__label">Double-rule</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MOTION TOKENS -->
+<section class="subsection" aria-labelledby="motion-label">
+  <div id="motion-label" class="subsection__label">01.4 — Motion Tokens (hover each row)</div>
+  <div class="motion-row">
+    <div class="motion-demo motion-demo--fast">
+      <span class="motion-demo__name">--dur-fast / --ease-tui</span>
+      <div class="motion-demo__bar"></div>
+      <span class="motion-demo__spec">100ms · steps(4) · state flips</span>
+    </div>
+    <div class="motion-demo motion-demo--std">
+      <span class="motion-demo__name">--dur-std / --ease-tui</span>
+      <div class="motion-demo__bar"></div>
+      <span class="motion-demo__spec">200ms · steps(4) · transitions</span>
+    </div>
+    <div class="motion-demo motion-demo--smooth">
+      <span class="motion-demo__name">--dur-std / --ease-smooth</span>
+      <div class="motion-demo__bar"></div>
+      <span class="motion-demo__spec">300ms · cubic-bezier · overlays</span>
+    </div>
+  </div>
+</section>
+
+<!-- SPACING -->
+<section class="subsection" aria-labelledby="spacing-label">
+  <div id="spacing-label" class="subsection__label">01.5 — Spacing Scale</div>
+  <table class="spec-table">
+    <thead>
+      <tr><th>Token</th><th>Value</th><th>Visual</th><th>Use Case</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>--sp-xs</code></td><td>4px</td>
+        <td><div style="width:4px;height:12px;background:var(--seed)"></div></td>
+        <td>Tag padding, tight gaps</td>
+      </tr>
+      <tr>
+        <td><code>--sp-sm</code></td><td>8px</td>
+        <td><div style="width:8px;height:12px;background:var(--seed)"></div></td>
+        <td>Icon gaps, badge padding</td>
+      </tr>
+      <tr>
+        <td><code>--sp-md</code></td><td>16px</td>
+        <td><div style="width:16px;height:12px;background:var(--seed)"></div></td>
+        <td>Component inner padding</td>
+      </tr>
+      <tr>
+        <td><code>--sp-lg</code></td><td>24px</td>
+        <td><div style="width:24px;height:12px;background:var(--seed)"></div></td>
+        <td>Card padding, grid gap</td>
+      </tr>
+      <tr>
+        <td><code>--sp-xl</code></td><td>32px</td>
+        <td><div style="width:32px;height:12px;background:var(--seed)"></div></td>
+        <td>Section spacing, page padding</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<script>
+window.addEventListener('message', e => {
+  if (e.data?.type !== 'METUI_THEME') return;
+  const root = document.documentElement;
+  Object.entries(e.data.theme).forEach(([k,v]) => root.style.setProperty(k, v));
+});
+</script>
+</body>
+</html>

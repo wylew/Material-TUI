@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>METUI | 08_OVERLAYS</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="metui-base.css">
+</head>
+<body>
+<header class="section-header">
+  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0</div>
+  <h1 class="section-header__title">@ 08_OVERLAYS</h1>
+  <p class="section-header__desc">Tooltips, modals, side-sheets, and snackbars.</p>
+</header>
+<div class="demo-box">
+  <div class="demo-box__label">// SECTION_STUB</div>
+  <p style="color:var(--fg-muted);font-size:0.85rem;margin-bottom:var(--sp-md)">
+    This section is queued for implementation. Drop the completed
+    <code>08-overlays.html</code> into the <code>sections/</code> folder to replace this stub.
+  </p>
+  <div style="border-left:3px solid var(--tonal-40);padding:var(--sp-md);background:color-mix(in srgb,var(--seed) 4%,var(--bg))">
+    <div style="font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">Contents_Planned</div>
+    <p style="font-size:0.82rem;color:var(--fg-muted)">Tooltips, modals, side-sheets, and snackbars.</p>
+  </div>
+</div>
+<script>
+window.addEventListener('message', e => {
+  if (e.data?.type !== 'METUI_THEME') return;
+  const root = document.documentElement;
+  Object.entries(e.data.theme).forEach(([k,v]) => root.style.setProperty(k, v));
+});
+</script>
+</body>
+</html>

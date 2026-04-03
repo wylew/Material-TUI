@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>METUI | 05_CONTAINMENT</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="metui-base.css">
+<style>
+
+/* ============================================================
+   METUI CARD COMPONENT
+   .metui-card
+   Variants:  --elevated  --outlined  --filled  --ghost
+   Modifiers: --interactive  --danger  --success  --warning
+   ============================================================ */
+
+.metui-card {
+  position: relative;
+  padding: var(--sp-lg);
+  background: transparent;
+  outline: none;
+}
+
+/* Variants */
+.metui-card--elevated {
+  border: 2px solid var(--tonal-40);
+  box-shadow: 6px 6px 0 var(--surface-2);
+  background: color-mix(in srgb, var(--seed) 4%, var(--bg));
+}
+.metui-card--outlined {
+  border: 1px dashed var(--outline);
+}
+.metui-card--filled {
+  border: 1px solid var(--surface-2);
+  background: var(--surface-2);
+}
+.metui-card--ghost {
+  border: 1px solid var(--outline);
+  background: transparent;
+  padding-top: calc(var(--sp-lg) + 4px);
+}
+
+/* Interactive state */
+.metui-card--interactive {
+  cursor: pointer;
+  min-height: var(--touch-target);
+  transition:
+    border-color var(--dur-std) var(--ease-tui),
+    box-shadow   var(--dur-std) var(--ease-tui),
+    transform    var(--dur-fast) var(--ease-tui);
+}
+.metui-card--interactive:hover,
+.metui-card--interactive:focus-visible { border-color: var(--seed); }
+.metui-card--interactive.metui-card--elevated:hover,
+.metui-card--interactive.metui-card--elevated:focus-visible {
+  box-shadow: 8px 8px 0 var(--tonal-20), 0 0 16px var(--tonal-10);
+}
+.metui-card--interactive:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0 var(--surface-2) !important;
+}
+.metui-card--interactive:focus-visible {
+  outline: 2px solid var(--seed);
+  outline-offset: 2px;
+}
+
+/* Semantic colors */
+.metui-card--danger  { border-color: var(--red);   background: color-mix(in srgb, var(--red)    6%, var(--bg)); }
+.metui-card--success { border-color: var(--green); background: color-mix(in srgb, var(--green)  6%, var(--bg)); }
+.metui-card--warning { border-color: var(--yellow);background: color-mix(in srgb, var(--yellow) 6%, var(--bg)); }
+
+/* Inner parts */
+.metui-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-md);
+}
+.metui-card__tag {
+  display: block;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--fg-subtle);
+  margin-bottom: var(--sp-xs);
+}
+.metui-card__tag::before { content: "// "; }
+.metui-card__title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--fg);
+  line-height: 1.3;
+}
+.metui-card__title--seed  { color: var(--seed); }
+.metui-card__title--cyan  { color: var(--cyan); }
+.metui-card__body {
+  font-size: 0.82rem;
+  color: var(--fg-muted);
+  line-height: 1.7;
+  margin-top: var(--sp-sm);
+}
+.metui-card__divider {
+  border: none;
+  border-top: 1px solid var(--outline);
+  margin: var(--sp-md) 0;
+}
+.metui-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+  font-size: 0.68rem;
+  color: var(--fg-subtle);
+}
+.metui-card__meta-item::before { content: "| "; color: var(--outline); }
+.metui-card__meta-item:first-child::before { content: ""; }
+.metui-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-md);
+}
+.metui-card__actions {
+  display: flex;
+  gap: var(--sp-sm);
+  flex-wrap: wrap;
+}
+
+/* Status badge */
+.metui-card__status {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px var(--sp-sm);
+  border: 1px solid;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.metui-card__status--ok      { color: var(--green);   border-color: var(--green); }
+.metui-card__status--error   { color: var(--red);     border-color: var(--red); }
+.metui-card__status--warning { color: var(--yellow);  border-color: var(--yellow); }
+.metui-card__status--info    { color: var(--cyan);    border-color: var(--cyan); }
+.metui-card__status--idle    { color: var(--fg-subtle); border-color: var(--outline); }
+
+/* ============================================================
+   BUTTONS (local, for card footers)
+   ============================================================ */
+.metui-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  min-height: var(--touch-target);
+  padding: 0 var(--sp-md);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--fg);
+  transition: all var(--dur-std) var(--ease-tui);
+  white-space: nowrap;
+}
+.metui-btn:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
+.metui-btn--filled   { background: var(--seed); color: var(--bg); }
+.metui-btn--filled:hover { background: var(--tonal-80); }
+.metui-btn--outlined { border: 1px solid var(--seed); color: var(--seed); }
+.metui-btn--outlined:hover { background: var(--tonal-10); }
+.metui-btn--text     { color: var(--seed); padding: 0 var(--sp-sm); }
+.metui-btn--text::before { content: "> "; color: var(--fg-subtle); }
+.metui-btn--danger.metui-btn--outlined { border-color: var(--red); color: var(--red); }
+.metui-btn--danger.metui-btn--filled   { background: var(--red); color: var(--bg); }
+
+/* ============================================================
+   MODAL DIALOG
+   ============================================================ */
+.metui-dialog {
+  border: 2px solid var(--outline);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  padding: 0;
+  max-width: min(90vw, 480px);
+  width: 100%;
+}
+.metui-dialog::backdrop {
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(2px);
+}
+.metui-dialog--danger  { border-color: var(--red); }
+.metui-dialog--success { border-color: var(--green); }
+
+.metui-dialog__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-md) var(--sp-lg);
+  border-bottom: 1px solid var(--outline);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.metui-dialog--danger  .metui-dialog__header { color: var(--red);   border-bottom-color: var(--red); }
+.metui-dialog--success .metui-dialog__header { color: var(--green); border-bottom-color: var(--green); }
+
+.metui-dialog__body {
+  padding: var(--sp-lg);
+  font-size: 0.82rem;
+  color: var(--fg-muted);
+  line-height: 1.7;
+}
+.metui-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-sm);
+  padding: var(--sp-md) var(--sp-lg);
+  border-top: 1px solid var(--outline);
+}
+</style>
+</head>
+<body>
+
+<header class="section-header">
+  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0 / 05</div>
+  <h1 class="section-header__title">> CONTAINMENT_SYSTEM</h1>
+  <p class="section-header__desc">Cards and dialogs. Class-based API — no inline styles needed.</p>
+</header>
+
+<!-- CARD VARIANTS -->
+<section class="subsection" aria-labelledby="variants-label">
+  <div id="variants-label" class="subsection__label">05.1 — Card Variants (static)</div>
+  <div class="grid">
+
+    <article class="metui-card metui-card--elevated">
+      <span class="metui-card__tag">ELEVATED_CARD</span>
+      <h2 class="metui-card__title metui-card__title--seed">KERNEL_PROCESS</h2>
+      <p class="metui-card__body">High-priority context. Block shadow simulates depth. Border derives from <code>--tonal-40</code>.</p>
+      <hr class="metui-card__divider">
+      <div class="metui-card__meta">
+        <span class="metui-card__meta-item">PID: 1042</span>
+        <span class="metui-card__meta-item">MEM: 2.1GB</span>
+        <span class="metui-card__meta-item">CPU: 0.02%</span>
+      </div>
+    </article>
+
+    <article class="metui-card metui-card--outlined">
+      <span class="metui-card__tag">OUTLINED_CARD</span>
+      <h2 class="metui-card__title">ARCHIVE_LOG</h2>
+      <p class="metui-card__body">Low-priority info. Dashed border at <code>--outline</code>. No background fill.</p>
+      <hr class="metui-card__divider">
+      <div class="metui-card__meta">
+        <span class="metui-card__meta-item">SIZE: 1.4GB</span>
+        <span class="metui-card__meta-item">MODIFIED: 2026-04-02</span>
+      </div>
+    </article>
+
+    <article class="metui-card metui-card--filled">
+      <span class="metui-card__tag">FILLED_CARD</span>
+      <h2 class="metui-card__title metui-card__title--cyan">SYSTEM_METRICS</h2>
+      <p class="metui-card__body"><code>--surface-2</code> background for grouped, in-context data.</p>
+      <hr class="metui-card__divider">
+      <div class="metui-card__meta">
+        <span class="metui-card__meta-item">UPTIME: 14d 3h</span>
+        <span class="metui-card__meta-item">LOAD: 0.72</span>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- INTERACTIVE CARDS -->
+<section class="subsection" aria-labelledby="interactive-label">
+  <div id="interactive-label" class="subsection__label">05.2 — Interactive Cards (hover · Tab · click)</div>
+  <div class="grid">
+
+    <article class="metui-card metui-card--elevated metui-card--interactive"
+             tabindex="0" role="button" aria-label="Open network config"
+             onclick="announce('NETWORK_CONFIG selected')">
+      <div class="metui-card__header">
+        <div>
+          <span class="metui-card__tag">NETWORK</span>
+          <h2 class="metui-card__title metui-card__title--seed">NETWORK_CONFIG</h2>
+        </div>
+        <span class="metui-card__status metui-card__status--ok">[OK]</span>
+      </div>
+      <p class="metui-card__body">Hover, Tab focus, or click. Active state translates 3px to simulate a key-press. Box shadow shrinks.</p>
+    </article>
+
+    <article class="metui-card metui-card--outlined metui-card--interactive metui-card--warning"
+             tabindex="0" role="button" aria-label="View storage warnings"
+             onclick="announce('STORAGE_WARN selected')">
+      <div class="metui-card__header">
+        <div>
+          <span class="metui-card__tag">STORAGE</span>
+          <h2 class="metui-card__title">DISK_THRESHOLD</h2>
+        </div>
+        <span class="metui-card__status metui-card__status--warning">[WR]</span>
+      </div>
+      <p class="metui-card__body">Warning semantic. Border and tinted bg both come from <code>--yellow</code> — no hardcoded colors.</p>
+    </article>
+
+    <article class="metui-card metui-card--elevated metui-card--interactive metui-card--danger"
+             tabindex="0" role="button" aria-label="View critical error — opens dialog"
+             onclick="document.getElementById('errorDialog').showModal()">
+      <div class="metui-card__header">
+        <div>
+          <span class="metui-card__tag">CRITICAL</span>
+          <h2 class="metui-card__title">AUTH_FAILURE</h2>
+        </div>
+        <span class="metui-card__status metui-card__status--error">[ER]</span>
+      </div>
+      <p class="metui-card__body">Click to open the modal dialog. Error variant: red border + tinted bg from <code>--red</code>.</p>
+    </article>
+
+  </div>
+</section>
+
+<!-- CARDS WITH FOOTERS -->
+<section class="subsection" aria-labelledby="footer-label">
+  <div id="footer-label" class="subsection__label">05.3 — Cards With Action Footers</div>
+  <div class="grid grid--2col">
+
+    <article class="metui-card metui-card--elevated">
+      <span class="metui-card__tag">DEPLOY_JOB</span>
+      <h2 class="metui-card__title metui-card__title--seed">PROD_BUILD_v4.2.1</h2>
+      <p class="metui-card__body">Queued and pending review. Awaiting stage gate before pipeline starts.</p>
+      <hr class="metui-card__divider">
+      <footer class="metui-card__footer">
+        <div class="metui-card__meta">
+          <span class="metui-card__meta-item">QUEUED: 4m ago</span>
+        </div>
+        <div class="metui-card__actions">
+          <button class="metui-btn metui-btn--text" onclick="announce('Build rejected')">REJECT</button>
+          <button class="metui-btn metui-btn--filled" onclick="announce('Build approved')">APPROVE</button>
+        </div>
+      </footer>
+    </article>
+
+    <article class="metui-card metui-card--filled">
+      <span class="metui-card__tag">USER_SESSION</span>
+      <h2 class="metui-card__title">wyatt@localhost</h2>
+      <p class="metui-card__body">Active session. Last: <code>git push origin main</code></p>
+      <hr class="metui-card__divider">
+      <footer class="metui-card__footer">
+        <span class="metui-card__status metui-card__status--ok">[ACTIVE]</span>
+        <div class="metui-card__actions">
+          <button class="metui-btn metui-btn--outlined metui-btn--danger"
+                  onclick="document.getElementById('errorDialog').showModal()">TERMINATE</button>
+        </div>
+      </footer>
+    </article>
+
+  </div>
+</section>
+
+<!-- SPEC TABLE -->
+<section class="subsection" aria-labelledby="spec-label">
+  <div id="spec-label" class="subsection__label">05.4 — MD3 Mapping</div>
+  <table class="spec-table">
+    <thead>
+      <tr><th>MD3 Variant</th><th>Class</th><th>TUI Treatment</th><th>Elevation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Elevated</td>
+        <td><code>.metui-card--elevated</code></td>
+        <td>Tonal border + block shadow</td>
+        <td>+2 — <code>6px 6px 0 var(--surface-2)</code></td>
+      </tr>
+      <tr>
+        <td>Filled</td>
+        <td><code>.metui-card--filled</code></td>
+        <td>Surface-2 background</td>
+        <td>+1 — background lift only</td>
+      </tr>
+      <tr>
+        <td>Outlined</td>
+        <td><code>.metui-card--outlined</code></td>
+        <td>Dashed outline border</td>
+        <td>0 — flat</td>
+      </tr>
+      <tr>
+        <td>Ghost</td>
+        <td><code>.metui-card--ghost</code></td>
+        <td>Solid thin outline, no bg</td>
+        <td>0 — flat</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- MODAL DIALOG -->
+<dialog id="errorDialog" class="metui-dialog metui-dialog--danger"
+        aria-labelledby="dialog-title" aria-describedby="dialog-body">
+  <header class="metui-dialog__header">
+    <span aria-hidden="true">!</span>
+    <span id="dialog-title">SYSTEM_HALT — AUTH_FAILURE</span>
+  </header>
+  <div class="metui-dialog__body" id="dialog-body">
+    <p>3 consecutive authentication failures on port 22. Session flagged for review.</p>
+    <br>
+    <p>Confirm to terminate the session and flush the auth cache. This action cannot be undone.</p>
+  </div>
+  <footer class="metui-dialog__footer">
+    <button class="metui-btn metui-btn--text"
+            onclick="document.getElementById('errorDialog').close(); announce('Cancelled')">CANCEL</button>
+    <button class="metui-btn metui-btn--filled metui-btn--danger"
+            onclick="document.getElementById('errorDialog').close(); announce('Session terminated')">CONFIRM</button>
+  </footer>
+</dialog>
+
+<!-- Live region -->
+<div id="live-announce" role="status" aria-live="polite"
+     style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"></div>
+
+<script>
+function announce(msg) {
+  const el = document.getElementById('live-announce');
+  el.textContent = '';
+  requestAnimationFrame(() => { el.textContent = msg; });
+}
+
+// Keyboard: Enter/Space on role=button
+document.querySelectorAll('[role="button"]').forEach(el => {
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+  });
+});
+
+window.addEventListener('message', e => {
+  if (e.data?.type !== 'METUI_THEME') return;
+  const root = document.documentElement;
+  Object.entries(e.data.theme).forEach(([k,v]) => root.style.setProperty(k, v));
+});
+</script>
+</body>
+</html>
