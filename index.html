@@ -1,648 +1,589 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>METUI | MD3 Expressive TUI Library</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            /* Catppuccin Mocha Based Palette */
-            --bg: #1e1e2e;
-            --curr: #313244;
-            --fg: #cdd6f4;
-            --comment: #585b70;
-            --purple: #cba6f7;
-            --cyan: #89dceb;
-            --green: #a6e3a1;
-            --red: #f38ba8;
-            --yellow: #f9e2af;
-        }
-/* --- 08_MOTION_TOKENS --- */
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>METUI | MD3 Expressive TUI Library</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   METUI SHELL — index.html
+   Handles: layout, sidebar, routing, theme engine
+   Sections live in /sections/*.html and are loaded into #view-frame
+   ============================================================ */
+
+/* --- DESIGN TOKENS --- */
 :root {
-    --ms-fast: 100ms;
-    --ms-standard: 200ms;
-    --ease-steppy: cubic-bezier(0.4, 0, 0.2, 1);
+  --seed:       #cba6f7;
+  --tonal-100:  var(--seed);
+  --tonal-80:   color-mix(in srgb, var(--seed) 80%, #1e1e2e);
+  --tonal-60:   color-mix(in srgb, var(--seed) 60%, #1e1e2e);
+  --tonal-40:   color-mix(in srgb, var(--seed) 40%, #1e1e2e);
+  --tonal-20:   color-mix(in srgb, var(--seed) 20%, #1e1e2e);
+  --tonal-10:   color-mix(in srgb, var(--seed) 10%, #1e1e2e);
+
+  --bg:         #1e1e2e;
+  --surface:    #181825;
+  --surface-2:  #313244;
+  --outline:    #585b70;
+  --outline-hi: #7f849c;
+
+  --fg:         #cdd6f4;
+  --fg-muted:   #a6adc8;
+  --fg-subtle:  #585b70;
+
+  --green:      #a6e3a1;
+  --red:        #f38ba8;
+  --yellow:     #f9e2af;
+  --cyan:       #89dceb;
+
+  --dur-fast:   100ms;
+  --dur-std:    200ms;
+  --ease-tui:   steps(4);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 16px;
+  --sp-lg: 24px;
+  --sp-xl: 32px;
+
+  --touch-target: 48px;
+  --sidebar-width: 260px;
+  --sidebar-collapsed: 56px;
 }
 
-/* Phosphor Glow Effect for High-Emphasis Elements */
-.glow-focus:hover, .glow-focus:focus-within {
-    box-shadow: 0 0 12px var(--purple);
-    transition: box-shadow var(--ms-standard) var(--ease-steppy);
+/* --- RESET --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  height: 100dvh;
+  display: flex;
+  overflow: hidden;
 }
 
-/* Mechanical Stepping for Progress/Movement */
-.step-transition {
-    transition: all var(--ms-standard) steps(4);
+/* Scanline overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(rgba(0,0,0,0) 50%, rgba(0,0,0,0.07) 50%),
+    linear-gradient(90deg, rgba(255,0,0,0.02), rgba(0,255,0,0.01), rgba(0,0,255,0.02));
+  background-size: 100% 3px, 3px 100%;
+  pointer-events: none;
+  z-index: 9999;
 }
 
-/* Active Heartbeat for FAB/Primary Actions */
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.7; }
-    100% { opacity: 1; }
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+#sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background: var(--surface);
+  border-right: 2px solid var(--outline);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width var(--dur-std) var(--ease-smooth),
+              min-width var(--dur-std) var(--ease-smooth);
+  z-index: 100;
 }
-.pulse { animation: pulse 2s infinite ease-in-out; }
-        body {
-            background: var(--bg);
-            color: var(--fg);
-            font-family: 'JetBrains Mono', monospace;
-            display: flex;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
 
-        /* Scanline Overlay */
-        body::after {
-            content: "";
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 3px, 3px 100%;
-            pointer-events: none;
-            z-index: 9999;
-        }
+#sidebar.collapsed {
+  width: var(--sidebar-collapsed);
+  min-width: var(--sidebar-collapsed);
+}
 
-        /* Sidebar Navigation */
-        aside {
-            width: 280px;
-            border-right: 2px solid var(--comment);
-            display: flex;
-            flex-direction: column;
-            background: #181825;
-            transition: width 0.3s ease;
-        }
+/* Logo bar */
+.sidebar__logo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--sp-md);
+  height: 56px;
+  border-bottom: 2px solid var(--outline);
+  flex-shrink: 0;
+}
 
-        /* MD3 Compact Rail Logic */
-        @media (max-width: 800px) {
-            aside { width: 70px; }
-            .logo, .nav-label, .nav-item span { display: none; }
-            .nav-item { text-align: center; font-size: 1.2rem; }
-        }
+.sidebar__logo-text {
+  color: var(--seed);
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity var(--dur-std);
+}
 
-        .logo { padding: 20px; border-bottom: 2px solid var(--comment); color: var(--purple); font-weight: bold; letter-spacing: 1px; }
-        .nav-group { padding: 10px 0; border-bottom: 1px solid var(--curr); }
-        .nav-label { padding: 5px 20px; font-size: 0.7rem; color: var(--comment); text-transform: uppercase; }
-        
-        .nav-item { padding: 10px 20px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; color: var(--fg); }
-        .nav-item:hover { background: var(--curr); color: var(--cyan); }
-        .nav-item.active { background: var(--purple); color: var(--bg); font-weight: bold; }
+#sidebar.collapsed .sidebar__logo-text { opacity: 0; width: 0; }
 
-        /* Main Content Area */
-        main { flex: 1; overflow-y: auto; padding: 40px; scroll-behavior: smooth; }
-        .view { display: none; animation: fadeIn 0.3s ease-in-out; }
-        .view.active { display: block; }
+.sidebar__toggle {
+  background: none;
+  border: 1px solid var(--outline);
+  color: var(--fg-subtle);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: color var(--dur-std), border-color var(--dur-std);
+}
+.sidebar__toggle:hover { color: var(--seed); border-color: var(--seed); }
+.sidebar__toggle:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
 
-        /* The Adaptive Grid */
-        .adaptive-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            max-width: 1200px;
-        }
+/* Nav scroll area */
+.sidebar__nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--outline) transparent;
+}
 
-        .full-width { grid-column: 1 / -1; }
+/* Nav group */
+.nav-group {
+  border-bottom: 1px solid var(--surface-2);
+  padding: var(--sp-sm) 0;
+}
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.nav-group__label {
+  padding: var(--sp-xs) var(--sp-md);
+  font-size: 0.6rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity var(--dur-std);
+}
+#sidebar.collapsed .nav-group__label { opacity: 0; }
 
-        /* TUI Components Styles */
-        .box { border: 2px solid var(--comment); padding: 25px; position: relative; margin-top: 30px; background: rgba(255,255,255,0.02); }
-        .box-title { position: absolute; top: -12px; left: 20px; background: var(--bg); padding: 0 10px; color: var(--purple); font-size: 0.8rem; font-weight: bold; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; }
-        th { text-align: left; color: var(--comment); border-bottom: 2px solid var(--comment); padding: 10px; text-transform: uppercase; font-size: 0.7rem; }
-        td { padding: 12px 10px; border-bottom: 1px solid var(--curr); }
-        
-        .badge { padding: 2px 8px; font-size: 0.7rem; border: 1px solid; border-radius: 2px; text-transform: uppercase; }
+/* Nav item */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 0 var(--sp-md);
+  height: var(--touch-target);
+  cursor: pointer;
+  color: var(--fg-muted);
+  text-decoration: none;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background var(--dur-fast) var(--ease-tui),
+              color var(--dur-fast) var(--ease-tui);
+  border: none;
+  background: none;
+  font-family: 'JetBrains Mono', monospace;
+  width: 100%;
+  text-align: left;
+}
 
-        /* Cursor Animation */
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-        .cursor { display: inline-block; width: 10px; height: 1.2em; background: var(--purple); vertical-align: middle; animation: blink 1s infinite; }
+.nav-item:hover { background: var(--surface-2); color: var(--seed); }
+.nav-item:focus-visible { outline: 2px solid var(--seed); outline-offset: -2px; }
 
-        code { color: var(--yellow); background: var(--curr); padding: 2px 4px; }
+.nav-item.active {
+  background: var(--tonal-20);
+  color: var(--seed);
+  font-weight: 700;
+  border-left: 3px solid var(--seed);
+}
 
-        /* ToDo List States */
-        #master-todo { list-style: none; padding: 0; }
-        #master-todo li { cursor: pointer; padding: 5px 0; transition: 0.2s; }
-        #master-todo li:hover { color: var(--cyan); }
-        #master-todo li::before { content: "[ ] "; font-family: monospace; }
-        #master-todo li.done { color: var(--comment); text-decoration: line-through; }
-        #master-todo li.done::before { content: "[X] "; color: var(--green); }
-    </style>
+.nav-item__glyph {
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--fg-subtle);
+  transition: color var(--dur-fast);
+}
+.nav-item:hover .nav-item__glyph,
+.nav-item.active .nav-item__glyph { color: var(--seed); }
+
+.nav-item__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity var(--dur-std);
+}
+#sidebar.collapsed .nav-item__label { opacity: 0; width: 0; overflow: hidden; }
+
+/* Sidebar footer: theme controls */
+.sidebar__footer {
+  border-top: 1px solid var(--surface-2);
+  padding: var(--sp-md);
+  flex-shrink: 0;
+}
+
+.sidebar__footer-label {
+  font-size: 0.6rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: var(--sp-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity var(--dur-std);
+}
+#sidebar.collapsed .sidebar__footer-label { opacity: 0; }
+
+.theme-swatches {
+  display: flex;
+  gap: var(--sp-xs);
+  flex-wrap: wrap;
+  transition: opacity var(--dur-std);
+}
+#sidebar.collapsed .theme-swatches { opacity: 0; pointer-events: none; }
+
+.theme-swatch {
+  width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform var(--dur-fast) var(--ease-tui), border-color var(--dur-std);
+}
+.theme-swatch:hover { transform: scale(1.2); }
+.theme-swatch:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.theme-swatch.active { border-color: var(--fg); }
+
+.seed-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-sm);
+  transition: opacity var(--dur-std);
+}
+#sidebar.collapsed .seed-row { opacity: 0; pointer-events: none; }
+
+.seed-row label {
+  font-size: 0.6rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#seedPicker {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--outline);
+  background: none;
+  cursor: pointer;
+  padding: 2px;
+}
+
+/* ============================================================
+   MAIN CONTENT AREA
+   ============================================================ */
+#shell-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Topbar */
+#topbar {
+  height: 56px;
+  border-bottom: 2px solid var(--outline);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-xl);
+  gap: var(--sp-md);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+#topbar-breadcrumb {
+  font-size: 0.75rem;
+  color: var(--fg-subtle);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+}
+#topbar-breadcrumb .crumb-active {
+  color: var(--seed);
+  font-weight: 700;
+}
+#topbar-breadcrumb .sep { color: var(--outline); margin: 0 2px; }
+
+#topbar-status {
+  margin-left: auto;
+  font-size: 0.65rem;
+  color: var(--yellow);
+  border: 1px solid var(--yellow);
+  padding: 2px var(--sp-sm);
+  white-space: nowrap;
+}
+
+/* Section iframe */
+#view-frame {
+  flex: 1;
+  border: none;
+  width: 100%;
+  background: var(--bg);
+  display: block;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 640px) {
+  #sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    transform: translateX(0);
+    transition: transform var(--dur-std) var(--ease-smooth);
+    z-index: 200;
+  }
+  #sidebar.mobile-hidden {
+    transform: translateX(-100%);
+  }
+  #mobile-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 199;
+  }
+  #sidebar:not(.mobile-hidden) ~ #mobile-overlay { display: block; }
+}
+
+@media (min-width: 641px) {
+  #mobile-overlay { display: none !important; }
+}
+
+</style>
 </head>
 <body>
 
-    <aside>
-        <div class="logo">METUI_SYSTEM_v1.0</div>
-        
-        <div class="nav-group">
-            <div class="nav-label">Core</div></div>
-            <div id="nav-home" class="nav-item active" onclick="route('home')"># <span>00_OVERVIEW</span></div>
-            <div id="nav-tokens" class="nav-item" onclick="route('tokens')">$ <span>01_DESIGN_TOKENS</span></div>
-        </div>
+<!-- SIDEBAR -->
+<aside id="sidebar" role="navigation" aria-label="Main navigation">
 
-        <div class="nav-group">
-            <div class="nav-label">Components (MD3)</div>
-            <div id="nav-actions" class="nav-item" onclick="route('actions')">! <span>02_ACTIONS</span></div>
-            <div id="nav-navigation" class="nav-item" onclick="route('navigation')">^ <span>03_NAVIGATION</span></div>
-            <div id="nav-selection" class="nav-item" onclick="route('selection')">* <span>04_SELECTION</span></div>
-            <div id="nav-containment" class="nav-item" onclick="route('containment')">[] <span>05_CONTAINMENT</span></div>
-            <div id="nav-inputs" class="nav-item" onclick="route('inputs')">> <span>06_INPUT_FIELDS</span></div>
-            <div id="nav-typography" class="nav-item" onclick="route('typography')">T <span>07_TYPOGRAPHY</span></div>
-<div id="nav-overlays" class="nav-item" onclick="route('overlays')">@ <span>08_OVERLAYS</span></div>
-<div id="nav-data" class="nav-item" onclick="route('data')">D <span>09_DATA_DISPLAY</span></div>
-<div id="nav-theme-advanced" class="nav-item" onclick="route('theme-advanced')">% <span>10_THEME_ADVANCED</span></div></div>
-<div id="nav-best-practices" class="nav-item" onclick="route('best-practices')">? <span>11_BEST_PRACTICES</span></div>
-        </div>
+  <div class="sidebar__logo">
+    <span class="sidebar__logo-text">METUI_v2.0</span>
+    <button class="sidebar__toggle" id="sidebarToggle" aria-label="Toggle sidebar" title="Toggle sidebar">«</button>
+  </div>
 
-        <div style="padding: 15px 20px; border-top: 1px solid var(--curr); margin-top: auto;">
-            <div class="nav-label">System_Theme</div>
-            <div style="display: flex; gap: 5px; margin-top: 5px;">
-                <button onclick="setTheme('mocha')" style="flex: 1; background: #cba6f7; color: #1e1e2e; border: none; font-family: inherit; font-size: 0.6rem; cursor: pointer; padding: 4px; font-weight: bold;">MOCHA</button>
-                <button onclick="setTheme('dracula')" style="flex: 1; background: #bd93f9; color: #282a36; border: none; font-family: inherit; font-size: 0.6rem; cursor: pointer; padding: 4px; font-weight: bold;">DRACULA</button>
-            </div>
-        </div>
-    </aside>
+  <nav class="sidebar__nav">
 
-    <main id="content-anchor">
-        
-        <section id="home" class="view active">
-            <div class="adaptive-container">
-                <div class="box full-width">
-                    <span class="box-title">PROJECT_STATUS_REPORT</span>
-                    <p>Click tasks to toggle completion status (Local session only).</p>
-                    <ul id="master-todo">
-                        <li onclick="this.classList.toggle('done')" class="done">Set up Architecture Skeleton</li>
-                        <li onclick="this.classList.toggle('done')" class="done">Map MD3 Tonal Palettes</li>
-                        <li onclick="this.classList.toggle('done')" class="done">Define Typography Scale</li>
-                        <li onclick="this.classList.toggle('done')">Component Spec: TuiButton</li>
-                        <li onclick="this.classList.toggle('done')">Component Spec: TuiInput</li>
-                        <li onclick="this.classList.toggle('done')">Final Documentation Review</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
+    <div class="nav-group">
+      <div class="nav-group__label">Core</div>
+      <button class="nav-item active" data-section="00-overview" onclick="route(this)">
+        <span class="nav-item__glyph">#</span>
+        <span class="nav-item__label">00_OVERVIEW</span>
+      </button>
+      <button class="nav-item" data-section="01-tokens" onclick="route(this)">
+        <span class="nav-item__glyph">$</span>
+        <span class="nav-item__label">01_DESIGN_TOKENS</span>
+      </button>
+    </div>
 
-        <section id="tokens" class="view">
-            <h1>> DESIGN_TOKENS_MAPPING</h1>
-            <div class="adaptive-container">
-                <div class="box full-width">
-                    <span class="box-title">01.1_COLOR_ROLES</span>
-                    <table>
-                        <thead>
-                            <tr><th>MD3 ROLE</th><th>TUI FUNCTION</th><th>CATPPUCCIN</th><th>DRACULA</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Primary</td><td>Focus/Prompts</td><td style="color:var(--purple)">#cba6f7</td><td style="color:var(--purple)">#bd93f9</td></tr>
-                            <tr><td>Surface</td><td>Background</td><td style="color:var(--comment)">#1e1e2e</td><td style="color:var(--comment)">#282a36</td></tr>
-                            <tr><td>Outline</td><td>Borders</td><td style="color:var(--comment)">#585b70</td><td style="color:var(--comment)">#6272a4</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+    <div class="nav-group">
+      <div class="nav-group__label">Components (MD3)</div>
+      <button class="nav-item" data-section="02-actions" onclick="route(this)">
+        <span class="nav-item__glyph">!</span>
+        <span class="nav-item__label">02_ACTIONS</span>
+      </button>
+      <button class="nav-item" data-section="03-navigation" onclick="route(this)">
+        <span class="nav-item__glyph">^</span>
+        <span class="nav-item__label">03_NAVIGATION</span>
+      </button>
+      <button class="nav-item" data-section="04-selection" onclick="route(this)">
+        <span class="nav-item__glyph">*</span>
+        <span class="nav-item__label">04_SELECTION</span>
+      </button>
+      <button class="nav-item" data-section="05-containment" onclick="route(this)">
+        <span class="nav-item__glyph">[]</span>
+        <span class="nav-item__label">05_CONTAINMENT</span>
+      </button>
+      <button class="nav-item" data-section="06-inputs" onclick="route(this)">
+        <span class="nav-item__glyph">></span>
+        <span class="nav-item__label">06_INPUT_FIELDS</span>
+      </button>
+      <button class="nav-item" data-section="07-typography" onclick="route(this)">
+        <span class="nav-item__glyph">T</span>
+        <span class="nav-item__label">07_TYPOGRAPHY</span>
+      </button>
+      <button class="nav-item" data-section="08-overlays" onclick="route(this)">
+        <span class="nav-item__glyph">@</span>
+        <span class="nav-item__label">08_OVERLAYS</span>
+      </button>
+      <button class="nav-item" data-section="09-data" onclick="route(this)">
+        <span class="nav-item__glyph">D</span>
+        <span class="nav-item__label">09_DATA_DISPLAY</span>
+      </button>
+    </div>
 
-                <div class="box">
-                    <span class="box-title">01.2_ELEVATION_SYSTEM</span>
-                    <div style="display: flex; gap: 20px; margin-top: 10px;">
-                        <div style="border: 1px solid var(--comment); padding: 10px; font-size: 0.8rem;">Flat (Surface)</div>
-                        <div style="border: 1px solid var(--purple); padding: 10px; font-size: 0.8rem; box-shadow: 4px 4px 0 var(--curr);">Block Shadow</div>
-                        <div style="border: 2px double var(--cyan); padding: 10px; font-size: 0.8rem;">Focused</div>
-                    </div>
-                </div>
-            </div>
-        </section>
+    <div class="nav-group">
+      <div class="nav-group__label">System</div>
+      <button class="nav-item" data-section="10-theme" onclick="route(this)">
+        <span class="nav-item__glyph">%</span>
+        <span class="nav-item__label">10_THEME_ADVANCED</span>
+      </button>
+      <button class="nav-item" data-section="11-best-practices" onclick="route(this)">
+        <span class="nav-item__glyph">?</span>
+        <span class="nav-item__label">11_BEST_PRACTICES</span>
+      </button>
+    </div>
 
-        <section id="actions" class="view">
-            <h1>> COMPONENT_GROUP: ACTIONS</h1>
-            <p>MD3 Expressive: High-emphasis triggers and floating action points.</p>
-            <div class="adaptive-container">
-                <div class="box full-width">
-                    <span class="box-title">02.1_TUI_BUTTON_SPEC</span>
-                    <div style="display: flex; gap: 30px; align-items: center; margin-bottom: 25px; flex-wrap: wrap;">
-                        <div>
-                            <div style="border: 1px solid var(--purple); color: var(--purple); padding: 10px 20px; display: inline-block; cursor: pointer; text-transform: uppercase; font-weight: bold;">[ SUBMIT_COMMAND ]</div>
-                            <p style="font-size: 0.7rem; color: var(--comment); margin-top: 10px;">STATE: NORMAL (Outlined)</p>
-                        </div>
-                        <div>
-                            <div style="background: var(--purple); color: var(--bg); padding: 10px 20px; display: inline-block; cursor: pointer; text-transform: uppercase; font-weight: bold;">█ EXECUTE_RUN █</div>
-                            <p style="font-size: 0.7rem; color: var(--comment); margin-top: 10px;">STATE: PRESSED (Inverted/Filled)</p>
-                        </div>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr><th>MD3 VARIANT</th><th>TUI EQUIVALENT</th><th>EXPRESSIVE INTERACTION</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td><strong>Elevated</strong></td><td>Double Border <code>╔══╗</code></td><td>On focus, border shifts from <code>Comment</code> to <code>Primary</code> color.</td></tr>
-                            <tr><td><strong>Filled</strong></td><td>Reverse Video <code>█ █</code></td><td>Background and Text colors swap (Inversion) on tap/click.</td></tr>
-                            <tr><td><strong>Outlined</strong></td><td>Single Line <code>┌──┐</code></td><td>Standard system button. Uses 1px vector border.</td></tr>
-                            <tr><td><strong>Text</strong></td><td>Prefix <code>> LABEL</code></td><td>No border. Uses a blinking <code>_</code> or <code>></code> as the active cue.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+  </nav>
 
-                <div class="box">
-                    <span class="box-title">02.2_FLOATING_ACTION_PROMPT (FAB)</span>
-                    <p>In METUI, this is a pinned block with a <strong>Block Shadow</strong> to simulate depth.</p>
-                    <div style="border: 2px solid var(--cyan); background: var(--bg); color: var(--cyan); padding: 15px; display: inline-block; font-weight: bold; box-shadow: 6px 6px 0 var(--curr);">+ NEW_ENTRY _</div>
-                </div>
-                <div class="glow-focus" style="border: 1px solid var(--purple); color: var(--purple); padding: 10px 20px; display: inline-block; cursor: pointer; transition: transform 0.1s steps(2);">
-    [ SUBMIT_COMMAND ]
+  <div class="sidebar__footer">
+    <div class="sidebar__footer-label">System_Theme</div>
+    <div class="theme-swatches" role="group" aria-label="Theme presets">
+      <button class="theme-swatch active" style="background:#cba6f7" title="Catppuccin Mocha"
+              onclick="setSeed('#cba6f7', this)" aria-label="Catppuccin Mocha"></button>
+      <button class="theme-swatch" style="background:#bd93f9" title="Dracula"
+              onclick="setSeed('#bd93f9', this)" aria-label="Dracula"></button>
+      <button class="theme-swatch" style="background:#89b4fa" title="Blue"
+              onclick="setSeed('#89b4fa', this)" aria-label="Blue"></button>
+      <button class="theme-swatch" style="background:#89dceb" title="Cyan"
+              onclick="setSeed('#89dceb', this)" aria-label="Cyan"></button>
+      <button class="theme-swatch" style="background:#a6e3a1" title="Green"
+              onclick="setSeed('#a6e3a1', this)" aria-label="Green"></button>
+      <button class="theme-swatch" style="background:#f38ba8" title="Red"
+              onclick="setSeed('#f38ba8', this)" aria-label="Red"></button>
+    </div>
+    <div class="seed-row">
+      <label for="seedPicker">Custom</label>
+      <input type="color" id="seedPicker" value="#cba6f7"
+             oninput="setSeedFromPicker(this.value)" aria-label="Custom seed color">
+    </div>
+  </div>
+
+</aside>
+
+<!-- Mobile backdrop -->
+<div id="mobile-overlay" onclick="closeMobileSidebar()" aria-hidden="true"></div>
+
+<!-- MAIN -->
+<div id="shell-main">
+
+  <header id="topbar" role="banner">
+    <div id="topbar-breadcrumb" aria-label="Current location">
+      <span>metui</span>
+      <span class="sep">/</span>
+      <span id="crumb-section" class="crumb-active">00_OVERVIEW</span>
+    </div>
+    <div id="topbar-status" aria-live="polite">STATUS: 0x00_READY</div>
+  </header>
+
+  <iframe
+    id="view-frame"
+    src="sections/00-overview.html"
+    title="Section content"
+    aria-label="Section content"
+  ></iframe>
+
 </div>
 
-<div class="pulse" style="border: 2px solid var(--cyan); background: var(--bg); color: var(--cyan); padding: 15px; display: inline-block; font-weight: bold; box-shadow: 6px 6px 0 var(--curr); cursor: pointer;">
-    + NEW_ENTRY _
-</div>
+<script>
+  // ---- ROUTING ----
+  const sectionLabels = {
+    '00-overview':      '00_OVERVIEW',
+    '01-tokens':        '01_DESIGN_TOKENS',
+    '02-actions':       '02_ACTIONS',
+    '03-navigation':    '03_NAVIGATION',
+    '04-selection':     '04_SELECTION',
+    '05-containment':   '05_CONTAINMENT',
+    '06-inputs':        '06_INPUT_FIELDS',
+    '07-typography':    '07_TYPOGRAPHY',
+    '08-overlays':      '08_OVERLAYS',
+    '09-data':          '09_DATA_DISPLAY',
+    '10-theme':         '10_THEME_ADVANCED',
+    '11-best-practices':'11_BEST_PRACTICES',
+  };
 
+  function route(btn) {
+    const section = btn.dataset.section;
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-frame').src = `sections/${section}.html`;
+    document.getElementById('crumb-section').textContent = sectionLabels[section] || section;
+    // close mobile sidebar
+    if (window.innerWidth <= 640) closeMobileSidebar();
+  }
 
+  // ---- THEME ENGINE ----
+  // Broadcast theme to iframe on load and on change
+  const frame = document.getElementById('view-frame');
 
-            </div>
-        </section>
+  function broadcastTheme() {
+    try {
+      const style = getComputedStyle(document.documentElement);
+      const vars = [
+        '--seed','--tonal-100','--tonal-80','--tonal-60',
+        '--tonal-40','--tonal-20','--tonal-10',
+        '--bg','--surface','--surface-2','--outline','--outline-hi',
+        '--fg','--fg-muted','--fg-subtle',
+        '--green','--red','--yellow','--cyan',
+        '--dur-fast','--dur-std','--ease-tui','--ease-smooth',
+        '--sp-xs','--sp-sm','--sp-md','--sp-lg','--sp-xl',
+        '--touch-target'
+      ];
+      const theme = {};
+      vars.forEach(v => { theme[v] = style.getPropertyValue(v).trim(); });
+      frame.contentWindow.postMessage({ type: 'METUI_THEME', theme }, '*');
+    } catch(e) {}
+  }
 
-        <section id="navigation" class="view">
-            <h1>> COMPONENT_GROUP: NAVIGATION</h1>
-            <div class="adaptive-container">
-                <div class="box full-width">
-                    <span class="box-title">03.1_SYSTEM_NAV_BAR</span>
-                    <div style="background: var(--curr); padding: 10px 15px; display: flex; gap: 25px; font-size: 0.9rem; border-bottom: 2px solid var(--purple); align-items: center; flex-wrap: wrap;">
-                        <div style="color: var(--purple); font-weight: bold; border-bottom: 2px solid var(--purple); margin-bottom: -12px; padding-bottom: 10px;">[01] HOME</div>
-                        <div style="color: var(--comment); cursor: pointer;">[02] FILES</div>
-                        <div style="color: var(--comment); cursor: pointer;">[03] NETWORK</div>
-                        <div style="margin-left: auto; color: var(--yellow); font-size: 0.7rem; border: 1px solid var(--yellow); padding: 2px 5px;">STATUS: 0x00_READY</div>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr><th>MD3 CONCEPT</th><th>TUI INTERPRETATION</th><th>EXPRESSIVE FEEDBACK</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td><strong>Active Indicator</strong></td><td>Bracketed Index <code>[01]</code></td><td>The <code>Primary</code> color underline extends to the full width of the label.</td></tr>
-                            <tr><td><strong>Label Type</strong></td><td>Monospace Caps</td><td>Uses <code>JetBrains Mono Bold</code> for high-legibility system feel.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+  frame.addEventListener('load', broadcastTheme);
 
-                <div class="box">
-                    <span class="box-title">03.2_DIRECTORY_TRAIL</span>
-                    <div style="font-family: 'JetBrains Mono'; font-size: 1.1rem; color: var(--cyan); margin-bottom: 15px;">root / components / <span style="background: var(--cyan); color: var(--bg); padding: 0 8px;">navigation</span> /</div>
-                    <p style="font-size: 0.8rem; color: var(--comment);">Emulates a file system path. The active directory uses <strong>Reverse Video</strong>.</p>
-                </div>
-            </div>
-        </section>
+  function setSeed(color, btn) {
+    document.documentElement.style.setProperty('--seed', color);
+    document.getElementById('seedPicker').value = color;
+    document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    broadcastTheme();
+  }
 
-        <section id="selection" class="view">
-            <h1>> SELECTION_CONTROLS</h1>
-            <div class="adaptive-container">
-                <div class="box full-width">
-                    <span class="box-title">04.1_TUI_CHECKBOX</span>
-                    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-                        <div style="cursor: pointer;"><span style="color: var(--purple); font-weight: bold;">[X]</span> ENABLE_OS_LEVEL_ENCRYPTION</div>
-                        <div style="cursor: pointer;"><span style="color: var(--comment);">[ ]</span> ALLOW_UNTRUSTED_PACKAGES</div>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr><th>MD3 PROPERTY</th><th>TUI INTERPRETATION</th><th>EXPRESSIVE ANIMATION</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Selected</td><td><code>[X]</code> (Primary Color)</td><td>Character "pops" from space to X.</td></tr>
-                            <tr><td>Unselected</td><td><code>[ ]</code> (Comment Color)</td><td>Dimmed borders.</td></tr>
-                            <tr><td>Indeterminate</td><td><code>[-]</code> (Yellow)</td><td>Used for partial parent-child selection.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+  function setSeedFromPicker(color) {
+    document.documentElement.style.setProperty('--seed', color);
+    document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+    broadcastTheme();
+  }
 
-                <div class="box">
-                    <span class="box-title">04.2_TUI_SWITCH (Toggle)</span>
-                    <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
-                        <div style="color: var(--green); border: 1px solid var(--green); padding: 2px 5px; display: flex; width: 50px; justify-content: flex-end;">
-                            <div style="background: var(--green); width: 20px; height: 15px;"></div>
-                        </div>
-                        <span>ON</span>
-                    </div>
-                    <p style="font-size: 0.8rem; color: var(--comment); margin-top: 15px;">*Switch uses <code>justify-content</code> for movement to maintain the "steppy" TUI feel.</p>
-                </div>
-            </div>
-        </section>
+  // ---- SIDEBAR TOGGLE ----
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('sidebarToggle');
+  let collapsed = false;
 
-        <section id="containment" class="view">
-            <h1>> CONTAINMENT_SYSTEM</h1>
-            <div class="adaptive-container">
-                <div class="box full-width">
-                    <span class="box-title">05.1_TUI_CARD_VARIANTS</span>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
-                        <div style="border: 1px solid var(--purple); padding: 15px; box-shadow: 6px 6px 0 var(--curr);">
-                            <div style="color: var(--purple); font-size: 0.7rem; margin-bottom: 10px;">// ELEVATED_CARD</div>
-                            <p>High-priority info. Uses <strong>Block Shadows</strong> to simulate depth.</p>
-                        </div>
-                        <div style="border: 1px dashed var(--comment); padding: 15px;">
-                            <div style="color: var(--comment); font-size: 0.7rem; margin-bottom: 10px;">// OUTLINED_CARD</div>
-                            <p>Low-priority info. Uses <strong>Dashed Borders</strong> for subtle containment.</p>
-                        </div>
-                    </div>
-                </div>
+  toggleBtn.addEventListener('click', () => {
+    collapsed = !collapsed;
+    sidebar.classList.toggle('collapsed', collapsed);
+    toggleBtn.textContent = collapsed ? '»' : '«';
+    toggleBtn.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+  });
 
-                <div class="box">
-                    <span class="box-title">05.2_MODAL_DIALOG</span>
-                    <div style="background: var(--curr); border: 2px solid var(--red); padding: 20px; text-align: center;">
-                        <h3 style="color: var(--red); margin-top: 0;">! SYSTEM_HALT !</h3>
-                        <p>Confirm deletion?</p>
-                        <button style="background: var(--red); border: none; padding: 5px 15px; font-family: inherit; font-weight: bold; cursor: pointer;">CONFIRM</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="inputs" class="view">
-            <h1>> INPUT_FIELDS</h1>
-            <div class="adaptive-container">
-                <div class="box full-width">
-                    <span class="box-title">06.1_THE_PROMPT_SPEC</span>
-                    <div style="margin-bottom: 25px; background: rgba(0,0,0,0.2); padding: 20px; border-left: 3px solid var(--purple);">
-                        <div style="color: var(--green); margin-bottom: 5px; font-size: 0.8rem;">guest@metui:~/projects$</div>
-                        <div style="display: flex; align-items: center; border-bottom: 1px solid var(--purple); padding-bottom: 5px;">
-                            <span style="color: var(--purple); margin-right: 10px;">></span>
-                            <span style="color: var(--fg);">input_text_here</span><span class="cursor"></span>
-                        </div>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr><th>MD3 ELEMENT</th><th>TUI INTERPRETATION</th><th>EXPRESSIVE FEEDBACK</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td><strong>Label</strong></td><td>Prompt Prefix</td><td>Static text describing the field (e.g., <code>login:</code>).</td></tr>
-                            <tr><td><strong>Focus Indicator</strong></td><td>Blinking Block <code>█</code></td><td>Simulates a live terminal connection heartbeat.</td></tr>
-                            <tr><td><strong>Error State</strong></td><td>Prefix <code>[!]</code></td><td>The prefix and bottom border turn <code>Error</code> (Red).</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="glow-focus" style="display: flex; align-items: center; border-bottom: 1px solid var(--purple); padding-bottom: 5px; transition: border-color 0.2s steps(3);">
-    <span style="color: var(--purple); margin-right: 10px;">></span>
-    <span style="color: var(--fg);">input_text_here</span><span class="cursor"></span>
-</div>
-        </section>
-<section id="typography" class="view">
-            <h1>> SYSTEM_TYPOGRAPHY_HIERARCHY</h1>
-            <p>MD3 Expressive utilizes a strict type scale to manage information density. In METUI, this is achieved through weight, case, and character-spacing.</p>
-            
-            <div class="adaptive-container">
-                <div class="box full-width">
-                    <span class="box-title">07.1_TYPE_ROLE_MAPPING</span>
-                    <table>
-                        <thead>
-                            <tr><th>MD3 ROLE</th><th>TUI RENDER</th><th>SPECIFICATION</th><th>USE CASE</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td><strong>Display_Large</strong></td><td style="font-size: 1.8rem; font-weight: 700; color: var(--purple);">DISPLAY_TXT</td><td>1.8rem / Bold / All-Caps</td><td>System Init / Hero Headers</td></tr>
-                            <tr><td><strong>Headline_Small</strong></td><td style="font-size: 1.2rem; border-bottom: 1px solid var(--purple);">Headline_One</td><td>1.2rem / Border-Bottom</td><td>Section Identification</td></tr>
-                            <tr><td><strong>Title_Medium</strong></td><td style="font-weight: bold; color: var(--cyan);">[ Title_Text ]</td><td>Bold / Brackets / Cyan</td><td>Component Grouping</td></tr>
-                            <tr><td><strong>Body_Large</strong></td><td style="color: var(--fg);">Standard_Body</td><td>0.9rem / Default Weight</td><td>General Documentation</td></tr>
-                            <tr><td><strong>Label_Small</strong></td><td style="font-size: 0.7rem; color: var(--comment); text-transform: uppercase;">// metadata_tag</td><td>0.7rem / Comment Color / Prefix</td><td>Technical Stats / Timestamps</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="box">
-                    <span class="box-title">07.2_LINE_HEIGHT_LOGIC</span>
-                    <p>To ensure "Expressive" breathing room, METUI enforces a <code>line-height: 1.6</code> on body text, preventing the "Wall of Text" common in legacy terminals.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="overlays" class="view">
-            <h1>> CONTEXTUAL_OVERLAYS</h1>
-            <p>MD3 Expressive uses tooltips and side-sheets to provide "just-in-time" information without breaking the user's flow.</p>
-            
-            <div class="adaptive-container">
-                <div class="box full-width">
-                    <span class="box-title">08.1_FLOATING_TOOLTIPS</span>
-                    <div style="display: flex; gap: 40px; margin-bottom: 25px; align-items: flex-start;">
-                        <div style="position: relative;">
-                            <div style="text-decoration: underline dotted var(--yellow); cursor: help;">Hover_For_Info</div>
-                            <div style="position: absolute; top: -45px; left: 0; background: var(--curr); border: 1px solid var(--yellow); padding: 4px 8px; font-size: 0.7rem; white-space: nowrap; color: var(--yellow); box-shadow: 3px 3px 0 rgba(0,0,0,0.5);">
-                                ╔ PTR: 0x4F2 ╗
-                            </div>
-                        </div>
-
-                        <div style="position: relative;">
-                            <div style="background: var(--purple); color: var(--bg); padding: 2px 10px; cursor: help; font-weight: bold;">[ SYSTEM_STATUS ]</div>
-                            <div style="position: absolute; top: 35px; left: 0; width: 200px; background: var(--bg); border: 2px double var(--purple); padding: 10px; font-size: 0.75rem; z-index: 5;">
-                                <div style="color: var(--purple); border-bottom: 1px solid var(--purple); margin-bottom: 5px; font-weight: bold;">RICH_OVERLAY_v1</div>
-                                <span>Provides detailed metadata regarding the active process. Includes sub-actions.</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <table>
-                        <thead>
-                            <tr><th>OVERLAY TYPE</th><th>TUI EQUIVALENT</th><th>BEHAVIOR</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td><strong>Plain Tooltip</strong></td><td>Single-Line Box</td><td>Appears on hover; 50ms step-fade transition.</td></tr>
-                            <tr><td><strong>Rich Tooltip</strong></td><td>Double-Border Modal</td><td>Includes header, body, and optional action-links.</td></tr>
-                            <tr><td><strong>Side Sheet</strong></td><td>Right-Pinned Aside</td><td>Persistent contextual data for complex tasks.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="box">
-                    <span class="box-title">08.2_ANCHOR_LOGIC</span>
-                    <p>Overlays are anchored to the <code>top-left</code> of the trigger element by default. In the "Expanded" grid view, side-sheets push content rather than overlapping it.</p>
-                </div>
-            </div>
-        </section>
-
-<section id="data" class="view">
-            <h1>> DATA_DISPLAY_SYSTEM</h1>
-            <p>MD3 Expressive data components prioritize "Scannability." In METUI, we use specific character-shorthand and tonal backgrounds to separate data points.</p>
-            
-            <div class="adaptive-container">
-                <div class="box full-width">
-                    <span class="box-title">09.1_EXPRESSIVE_LIST_ITEMS</span>
-                    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px;">
-                        <div style="background: var(--curr); padding: 12px; border-left: 4px solid var(--purple); display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <div style="font-weight: bold; color: var(--purple);">[SYS] INIT_KERNEL_v4.2</div>
-                                <div style="font-size: 0.75rem; color: var(--comment);">PID: 1042 | OWNER: root | CPU: 0.02%</div>
-                            </div>
-                            <div style="color: var(--green); font-family: monospace;">RUNNING</div>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.05); padding: 12px; border-left: 4px solid var(--comment); display: flex; align-items: center; justify-content: space-between;">
-                            <div>
-                                <div style="font-weight: bold; color: var(--fg);">[USR] DOCS_ARCHIVE.tar.gz</div>
-                                <div style="font-size: 0.75rem; color: var(--comment);">SIZE: 1.4GB | MODIFIED: 2026-04-02</div>
-                            </div>
-                            <div style="color: var(--yellow); font-family: monospace;">COMPRESSED</div>
-                        </div>
-                    </div>
-
-                    <table>
-                        <thead>
-                            <tr><th>MD3 SPEC</th><th>TUI INTERPRETATION</th><th>EXPRESSIVE FEEDBACK</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td><strong>Overline</strong></td><td>Bracketed Tag <code>[SYS]</code></td><td>Uses <code>Comment</code> color for secondary categorization.</td></tr>
-                            <tr><td><strong>Headline</strong></td><td>Bold Primary</td><td>High contrast for quick scanning of names/IDs.</td></tr>
-                            <tr><td><strong>Supporting Text</strong></td><td>Metadata Line</td><td>Separated by <code>|</code> (Pipe) characters for clarity.</td></tr>
-                            <tr><td><strong>Trailing Meta</strong></td><td>Status Text</td><td>Right-aligned status (e.g., <code>RUNNING</code>) for visual balance.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="box">
-                    <span class="box-title">09.2_ACTION_CHIPS</span>
-                    <p style="font-size: 0.8rem; margin-bottom: 15px;">Chips are used for filtering or input tags. In METUI, they are pill-shaped boxes.</p>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                        <span style="border: 1px solid var(--cyan); color: var(--cyan); padding: 2px 10px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;"># kernel</span>
-                        <span style="border: 1px solid var(--purple); background: var(--purple); color: var(--bg); padding: 2px 10px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;"># active x</span>
-                        <span style="border: 1px solid var(--comment); color: var(--comment); padding: 2px 10px; border-radius: 20px; font-size: 0.8rem; cursor: pointer;"># logs</span>
-                    </div>
-                </div>
-
-                <div class="box">
-                    <span class="box-title">09.3_NOTIFICATION_BADGES</span>
-                    <div style="display: flex; align-items: center; gap: 20px;">
-                        <div style="position: relative; display: inline-block;">
-                            <span style="font-size: 1.5rem;">[MAIL]</span>
-                            <span style="position: absolute; top: -5px; right: -10px; background: var(--red); color: var(--bg); font-size: 0.6rem; padding: 2px 4px; font-weight: bold; border-radius: 2px;">99+</span>
-                        </div>
-                        <p style="font-size: 0.8rem;">Badges use the <code>Error</code> (Red) role for high visibility against the terminal background.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-<section id="theme-advanced" class="view">
-            <h1>> ADVANCED_THEME_ENGINE</h1>
-            <p>MD3 Expressive uses "Dynamic Color" to generate accessible tonal palettes. In METUI, we map these to 10 specific TUI brightness levels.</p>
-            
-            <div class="adaptive-container">
-                <div class="box full-width">
-                    <span class="box-title">10.1_TONAL_PALETTE_MAPPING</span>
-                    <div style="display: flex; height: 60px; margin-bottom: 20px; border: 1px solid var(--comment);">
-                        <div style="flex: 1; background: var(--purple); color: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold;">T-100</div>
-                        <div style="flex: 1; background: var(--purple); opacity: 0.8; color: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">T-80</div>
-                        <div style="flex: 1; background: var(--purple); opacity: 0.6; color: var(--fg); display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">T-60</div>
-                        <div style="flex: 1; background: var(--purple); opacity: 0.4; color: var(--fg); display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">T-40</div>
-                        <div style="flex: 1; background: var(--purple); opacity: 0.2; color: var(--fg); display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">T-20</div>
-                        <div style="flex: 1; background: var(--bg); color: var(--purple); display: flex; align-items: center; justify-content: center; font-size: 0.7rem;">T-0</div>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr><th>MD3 ROLE</th><th>TUI LUMINANCE</th><th>CSS VARIABLE</th><th>USE CASE</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td><strong>On_Primary</strong></td><td>100% Brightness</td><td><code>--fg</code></td><td>Text on active buttons.</td></tr>
-                            <tr><td><strong>Primary_Container</strong></td><td>20% - 40% Alpha</td><td><code>--curr</code></td><td>Background for focused blocks.</td></tr>
-                            <tr><td><strong>Surface_Variant</strong></td><td>10% Alpha</td><td><code>rgba(255,255,255,0.05)</code></td><td>Subtle list item backgrounds.</td></tr>
-                            <tr><td><strong>Inverse_Surface</strong></td><td>100% Inversion</td><td><code>--bg</code> on <code>--fg</code></td><td>Snackbar / Heavy Alerts.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="box">
-                    <span class="box-title">10.2_SEED_COLOR_LOGIC</span>
-                    <p style="font-size: 0.8rem; margin-bottom: 15px;">METUI themes are derived from a single <strong>Seed Variable</strong> (<code>--purple</code>). Changing the seed automatically re-calculates the Tonal Palette.</p>
-                    <div style="display: flex; gap: 10px;">
-                        <div style="width: 30px; height: 30px; background: #cba6f7; border: 1px solid var(--fg);"></div>
-                        <div style="width: 30px; height: 30px; background: #89dceb; border: 1px solid var(--fg);"></div>
-                        <div style="width: 30px; height: 30px; background: #a6e3a1; border: 1px solid var(--fg);"></div>
-                        <div style="width: 30px; height: 30px; background: #f38ba8; border: 1px solid var(--fg);"></div>
-                    </div>
-                </div>
-
-                <div class="box">
-                    <span class="box-title">10.3_CONTRAST_RATIO_CHECK</span>
-                    <p style="font-size: 0.8rem;">To maintain MD3 Expressive standards, METUI enforces a <strong>4.5:1</strong> ratio. In Low-Color modes, the system automatically swaps to <strong>High-Contrast Borders</strong> (<code>2px Solid</code>) instead of Tonal Backgrounds.</p>
-                </div>
-            </div>
-        </section>
-
-<section id="best-practices" class="view">
-            <h1>> IMPLEMENTATION_GUIDELINES</h1>
-            <p>To maintain the MD3 Expressive standard within a character-cell environment, follow these architectural principles.</p>
-            
-            <div class="adaptive-container">
-                <div class="box full-width">
-                    <span class="box-title">11.1_INFORMATION_DENSITY</span>
-                    <table>
-                        <thead>
-                            <tr><th>LEVEL</th><th>SPACING (Rows)</th><th>IDEAL USE CASE</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td><strong>Relaxed</strong></td><td>3 - 4 Rows</td><td>Onboarding / Initial Setup / Branding</td></tr>
-                            <tr><td><strong>Standard</strong></td><td>1 - 2 Rows</td><td>General Documentation / Navigation</td></tr>
-                            <tr><td><strong>Compact</strong></td><td>0 Rows</td><td>Data Tables / Log Streams / Process Monitoring</td></tr>
-                        </tbody>
-                    </table>
-                    <p style="margin-top: 15px; font-size: 0.8rem; color: var(--comment);">// Expressive design allows for <strong>Relaxed</strong> density in headers to reduce cognitive load.</p>
-                </div>
-
-                <div class="box">
-                    <span class="box-title">11.2_THE_RULE_OF_ONE</span>
-                    <p style="font-size: 0.8rem; margin-bottom: 10px;">Every view should have exactly <strong>one</strong> High-Emphasis Action (Filled Button or FAB).</p>
-                    <div style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="background: var(--purple); color: var(--bg); padding: 5px; text-align: center; font-weight: bold;">[!] PRIMARY_ACTION</div>
-                        <div style="border: 1px solid var(--comment); color: var(--comment); padding: 5px; text-align: center;">SECONDARY_OPTION</div>
-                        <div style="text-align: center; font-size: 0.7rem;">> dismiss_all</div>
-                    </div>
-                </div>
-
-                <div class="box">
-                    <span class="box-title">11.3_A11Y_AND_FALLBACKS</span>
-                    <p style="font-size: 0.8rem;">Never rely solely on color (e.g., Green for Success). Always include a <strong>Textual Indicator</strong>.</p>
-                    <ul style="font-size: 0.8rem; list-style: none; padding: 0;">
-                        <li><span style="color: var(--green);">[OK]</span> Process_Success</li>
-                        <li><span style="color: var(--red);">[ER]</span> Connection_Failed</li>
-                        <li><span style="color: var(--yellow);">[WR]</span> Memory_Threshold</li>
-                    </ul>
-                </div>
-
-                <div class="box full-width">
-                    <span class="box-title">11.4_MOTION_AND_RHYTHM</span>
-                    <p>In a TUI, motion should be <strong>Functional</strong>, not Decorative.</p>
-                    <ul style="font-size: 0.85rem;">
-                        <li><strong>Blink:</strong> Use only for the active text insertion point (The Cursor).</li>
-                        <li><strong>Pulse:</strong> Use only for critical system halts or empty states.</li>
-                        <li><strong>Step:</strong> Use for state transitions to maintain the "Hardware" feel.</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <script>
-        const themes = {
-            mocha: {
-                '--bg': '#1e1e2e', '--curr': '#313244', '--fg': '#cdd6f4',
-                '--comment': '#585b70', '--purple': '#cba6f7', '--cyan': '#89dceb',
-                '--green': '#a6e3a1', '--red': '#f38ba8', '--yellow': '#f9e2af'
-            },
-            dracula: {
-                '--bg': '#282a36', '--curr': '#44475a', '--fg': '#f8f8f2',
-                '--comment': '#6272a4', '--purple': '#bd93f9', '--cyan': '#8be9fd',
-                '--green': '#50fa7b', '--red': '#ff5555', '--yellow': '#f1fa8c'
-            }
-        };
-
-        function setTheme(name) {
-            const root = document.documentElement;
-            const theme = themes[name];
-            Object.keys(theme).forEach(key => {
-                root.style.setProperty(key, theme[key]);
-            });
-        }
-
-        function route(id) {
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            const activeNav = document.getElementById('nav-' + id);
-            if(activeNav) activeNav.classList.add('active');
-
-            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
-            const targetView = document.getElementById(id);
-            if(targetView) targetView.classList.add('active');
-        }
-    </script>
+  // ---- MOBILE SIDEBAR ----
+  function closeMobileSidebar() {
+    sidebar.classList.add('mobile-hidden');
+  }
+  // On mobile, sidebar starts hidden — add a hamburger via topbar
+  if (window.innerWidth <= 640) {
+    sidebar.classList.add('mobile-hidden');
+    const ham = document.createElement('button');
+    ham.textContent = '≡';
+    ham.className = 'sidebar__toggle';
+    ham.style.marginRight = 'auto';
+    ham.setAttribute('aria-label', 'Open navigation');
+    ham.onclick = () => sidebar.classList.remove('mobile-hidden');
+    document.getElementById('topbar').prepend(ham);
+  }
+</script>
 </body>
 </html>
