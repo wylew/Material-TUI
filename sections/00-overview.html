@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>METUI | 00_OVERVIEW</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="metui-base.css">
+<style>
+.hero {
+  border: 2px solid var(--seed);
+  padding: var(--sp-xl);
+  margin-bottom: var(--sp-xl);
+  position: relative;
+  background: color-mix(in srgb, var(--seed) 5%, var(--bg));
+}
+.hero__system-tag {
+  font-size: 0.65rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: var(--sp-md);
+}
+.hero__name {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--seed);
+  line-height: 1;
+  margin-bottom: var(--sp-sm);
+}
+.hero__tagline {
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  max-width: 560px;
+}
+.hero__cursor { margin-left: 4px; }
+.hero__version {
+  position: absolute;
+  top: var(--sp-md);
+  right: var(--sp-md);
+  font-size: 0.65rem;
+  color: var(--seed);
+  border: 1px solid var(--tonal-40);
+  padding: 2px var(--sp-sm);
+}
+
+/* Status grid */
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-xl);
+}
+.status-card {
+  border: 1px solid var(--outline);
+  padding: var(--sp-md);
+  background: var(--surface);
+}
+.status-card__label {
+  font-size: 0.6rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: var(--sp-xs);
+}
+.status-card__value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--seed);
+}
+.status-card__sub {
+  font-size: 0.72rem;
+  color: var(--fg-subtle);
+  margin-top: 2px;
+}
+
+/* Todo list */
+.todo-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+.todo-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: var(--sp-xs) 0;
+  transition: color var(--dur-fast) var(--ease-tui);
+  min-height: var(--touch-target);
+}
+.todo-list li:hover { color: var(--seed); }
+.todo-list li.done { color: var(--fg-subtle); text-decoration: line-through; }
+.todo-list li .check {
+  width: 20px;
+  flex-shrink: 0;
+  color: var(--fg-subtle);
+  font-weight: 700;
+}
+.todo-list li.done .check { color: var(--green); }
+
+/* Principles */
+.principle-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+.principle {
+  display: flex;
+  gap: var(--sp-md);
+  align-items: flex-start;
+  padding: var(--sp-md);
+  border-left: 3px solid var(--tonal-40);
+  background: color-mix(in srgb, var(--seed) 4%, var(--bg));
+}
+.principle__glyph {
+  font-size: 1.2rem;
+  color: var(--seed);
+  flex-shrink: 0;
+  width: 28px;
+}
+.principle__title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 2px;
+}
+.principle__body {
+  font-size: 0.78rem;
+  color: var(--fg-muted);
+}
+</style>
+</head>
+<body>
+
+<header class="section-header">
+  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0</div>
+  <h1 class="section-header__title">> PROJECT_STATUS_REPORT</h1>
+  <p class="section-header__desc">MD3 Expressive TUI — bridges Material Design 3 and legacy terminal aesthetics.</p>
+</header>
+
+<!-- HERO -->
+<div class="hero" role="banner">
+  <div class="hero__system-tag">// SYSTEM_INIT — BOOT_SEQUENCE_COMPLETE</div>
+  <div class="hero__name">METUI<span class="cursor hero__cursor"></span></div>
+  <p class="hero__tagline">Material Expressive Terminal UI. High-density, MD3-compliant, keyboard-first design system for web and mobile.</p>
+  <div class="hero__version">v2.0.0</div>
+</div>
+
+<!-- STATUS CARDS -->
+<section class="subsection" aria-labelledby="status-label">
+  <div id="status-label" class="subsection__label">System_Metrics</div>
+  <div class="status-grid">
+    <div class="status-card">
+      <div class="status-card__label">Components</div>
+      <div class="status-card__value">11</div>
+      <div class="status-card__sub">sections documented</div>
+    </div>
+    <div class="status-card">
+      <div class="status-card__label">Token_System</div>
+      <div class="status-card__value">1 seed</div>
+      <div class="status-card__sub">derives full tonal palette</div>
+    </div>
+    <div class="status-card">
+      <div class="status-card__label">Touch_Target</div>
+      <div class="status-card__value">48px</div>
+      <div class="status-card__sub">MD3 minimum enforced</div>
+    </div>
+    <div class="status-card">
+      <div class="status-card__label">Keyboard_Nav</div>
+      <div class="status-card__value">Full</div>
+      <div class="status-card__sub">focus-visible on all controls</div>
+    </div>
+  </div>
+</section>
+
+<!-- TASK LIST -->
+<div class="grid grid--2col">
+
+  <section class="subsection" aria-labelledby="tasks-label">
+    <div id="tasks-label" class="subsection__label">Build_Checklist</div>
+    <ul class="todo-list" id="todo">
+      <li class="done" onclick="this.classList.toggle('done')">
+        <span class="check">[X]</span> Architecture skeleton
+      </li>
+      <li class="done" onclick="this.classList.toggle('done')">
+        <span class="check">[X]</span> MD3 tonal palette mapping
+      </li>
+      <li class="done" onclick="this.classList.toggle('done')">
+        <span class="check">[X]</span> Typography scale defined
+      </li>
+      <li class="done" onclick="this.classList.toggle('done')">
+        <span class="check">[X]</span> Seed-color tonal system (CSS color-mix)
+      </li>
+      <li class="done" onclick="this.classList.toggle('done')">
+        <span class="check">[X]</span> Shell + iframe routing
+      </li>
+      <li onclick="this.classList.toggle('done')">
+        <span class="check">[ ]</span> Component spec: TuiButton
+      </li>
+      <li onclick="this.classList.toggle('done')">
+        <span class="check">[ ]</span> Component spec: TuiInput
+      </li>
+      <li onclick="this.classList.toggle('done')">
+        <span class="check">[ ]</span> npm package scaffold
+      </li>
+      <li onclick="this.classList.toggle('done')">
+        <span class="check">[ ]</span> Final documentation review
+      </li>
+    </ul>
+  </section>
+
+  <section class="subsection" aria-labelledby="principles-label">
+    <div id="principles-label" class="subsection__label">Design_Principles</div>
+    <div class="principle-list">
+      <div class="principle">
+        <div class="principle__glyph">#</div>
+        <div>
+          <div class="principle__title">SEMANTIC_HTML</div>
+          <div class="principle__body">Use the right element for the job. Buttons are <code>&lt;button&gt;</code>, dialogs are <code>&lt;dialog&gt;</code>.</div>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle__glyph">$</div>
+        <div>
+          <div class="principle__title">CLASS_API_FIRST</div>
+          <div class="principle__body">No inline styles for consumers. All variation through modifier classes.</div>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle__glyph">!</div>
+        <div>
+          <div class="principle__title">ONE_SEED_COLOR</div>
+          <div class="principle__body">Change <code>--seed</code> and the entire tonal palette follows via <code>color-mix()</code>.</div>
+        </div>
+      </div>
+      <div class="principle">
+        <div class="principle__glyph">^</div>
+        <div>
+          <div class="principle__title">TOUCH_SAFE</div>
+          <div class="principle__body">Every interactive element meets the 48px MD3 minimum touch target.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+window.addEventListener('message', e => {
+  if (e.data?.type !== 'METUI_THEME') return;
+  const root = document.documentElement;
+  Object.entries(e.data.theme).forEach(([k,v]) => root.style.setProperty(k, v));
+});
+</script>
+</body>
+</html>
