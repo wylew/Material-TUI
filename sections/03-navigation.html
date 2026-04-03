@@ -6,25 +6,658 @@
 <title>METUI | 03_NAVIGATION</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="metui-base.css">
+<style>
+
+/* ============================================================
+   METUI NAVIGATION COMPONENTS
+
+   .metui-navbar       — horizontal top nav bar
+   .metui-tabs         — tab strip with panels
+   .metui-breadcrumb   — path / directory trail
+   .metui-rail         — vertical sidebar nav
+   .metui-pagination   — page step controls
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   NAVBAR
+   ---------------------------------------------------------- */
+.metui-navbar {
+  display: flex;
+  align-items: stretch;
+  background: var(--surface);
+  border: 2px solid var(--outline);
+  min-height: var(--touch-target);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.metui-navbar::-webkit-scrollbar { display: none; }
+
+.metui-navbar__brand {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-lg);
+  border-right: 1px solid var(--outline);
+  color: var(--seed);
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.metui-navbar__items {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+}
+
+.metui-navbar__item {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-lg);
+  min-height: var(--touch-target);
+  min-width: var(--touch-target);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--fg-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+  gap: var(--sp-sm);
+  text-decoration: none;
+  transition:
+    color        var(--dur-fast) var(--ease-tui),
+    background   var(--dur-fast) var(--ease-tui),
+    border-color var(--dur-fast) var(--ease-tui);
+}
+.metui-navbar__item:hover { color: var(--seed); background: var(--tonal-10); }
+.metui-navbar__item:focus-visible { outline: 2px solid var(--seed); outline-offset: -2px; }
+.metui-navbar__item.active {
+  color: var(--seed);
+  font-weight: 700;
+  border-bottom-color: var(--seed);
+  background: var(--tonal-10);
+}
+.metui-navbar__item-index {
+  color: var(--fg-subtle);
+  font-size: 0.7rem;
+  transition: color var(--dur-fast) var(--ease-tui);
+}
+.metui-navbar__item.active .metui-navbar__item-index,
+.metui-navbar__item:hover  .metui-navbar__item-index { color: var(--tonal-60); }
+
+.metui-navbar__end {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-md);
+  margin-left: auto;
+  gap: var(--sp-sm);
+  flex-shrink: 0;
+  border-left: 1px solid var(--outline);
+}
+.metui-navbar__badge {
+  font-size: 0.62rem;
+  border: 1px solid;
+  padding: 2px var(--sp-sm);
+  white-space: nowrap;
+}
+.metui-navbar__badge--ok      { color: var(--green);  border-color: var(--green); }
+.metui-navbar__badge--warning { color: var(--yellow); border-color: var(--yellow); }
+.metui-navbar__badge--error   { color: var(--red);    border-color: var(--red); }
+.metui-navbar__badge--info    { color: var(--cyan);   border-color: var(--cyan); }
+
+/* ----------------------------------------------------------
+   TABS
+   ---------------------------------------------------------- */
+.metui-tabs { display: flex; flex-direction: column; }
+
+.metui-tabs__strip {
+  display: flex;
+  border-bottom: 2px solid var(--outline);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.metui-tabs__strip::-webkit-scrollbar { display: none; }
+
+.metui-tabs__tab {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 0 var(--sp-lg);
+  min-height: var(--touch-target);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  color: var(--fg-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color        var(--dur-fast) var(--ease-tui),
+    border-color var(--dur-fast) var(--ease-tui),
+    background   var(--dur-fast) var(--ease-tui);
+}
+.metui-tabs__tab:hover { color: var(--seed); background: var(--tonal-10); }
+.metui-tabs__tab:focus-visible { outline: 2px solid var(--seed); outline-offset: -2px; }
+.metui-tabs__tab.active {
+  color: var(--seed);
+  font-weight: 700;
+  border-bottom-color: var(--seed);
+}
+.metui-tabs__tab-glyph {
+  color: var(--fg-subtle);
+  font-size: 0.78rem;
+  transition: color var(--dur-fast);
+}
+.metui-tabs__tab.active .metui-tabs__tab-glyph,
+.metui-tabs__tab:hover  .metui-tabs__tab-glyph { color: var(--tonal-60); }
+
+.metui-tabs__panels { margin-top: var(--sp-md); }
+.metui-tabs__panel {
+  display: none;
+  padding: var(--sp-md);
+  border: 1px solid var(--surface-2);
+  font-size: 0.82rem;
+  color: var(--fg-muted);
+  line-height: 1.9;
+}
+.metui-tabs__panel.active {
+  display: block;
+  animation: tabFade var(--dur-std) var(--ease-tui);
+}
+@keyframes tabFade { from { opacity:0; } to { opacity:1; } }
+
+/* ----------------------------------------------------------
+   BREADCRUMB
+   ---------------------------------------------------------- */
+.metui-breadcrumb__list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  list-style: none;
+  font-size: 0.82rem;
+}
+.metui-breadcrumb__item { display: flex; align-items: center; }
+.metui-breadcrumb__link {
+  color: var(--fg-muted);
+  text-decoration: none;
+  padding: var(--sp-xs) var(--sp-sm);
+  min-height: var(--touch-target);
+  display: flex;
+  align-items: center;
+  transition: color var(--dur-fast) var(--ease-tui);
+}
+.metui-breadcrumb__link:hover { color: var(--seed); }
+.metui-breadcrumb__link:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
+.metui-breadcrumb__sep { color: var(--outline); padding: 0 2px; user-select: none; }
+.metui-breadcrumb__current {
+  padding: 3px var(--sp-sm);
+  background: var(--seed);
+  color: var(--bg);
+  font-weight: 700;
+}
+.metui-breadcrumb__ellipsis {
+  color: var(--outline);
+  padding: 0 var(--sp-sm);
+  min-height: var(--touch-target);
+  display: flex;
+  align-items: center;
+}
+
+/* ----------------------------------------------------------
+   VERTICAL RAIL
+   ---------------------------------------------------------- */
+.metui-rail {
+  display: flex;
+  flex-direction: column;
+  width: 210px;
+  background: var(--surface);
+  border: 2px solid var(--outline);
+  padding: var(--sp-sm) 0;
+}
+.metui-rail__group-label {
+  padding: var(--sp-xs) var(--sp-md);
+  font-size: 0.58rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: var(--sp-sm);
+}
+.metui-rail__group-label:first-child { margin-top: 0; }
+.metui-rail__divider {
+  border: none;
+  border-top: 1px solid var(--surface-2);
+  margin: var(--sp-sm) 0;
+}
+.metui-rail__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: 0 var(--sp-md);
+  min-height: var(--touch-target);
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  color: var(--fg-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition:
+    color        var(--dur-fast) var(--ease-tui),
+    background   var(--dur-fast) var(--ease-tui),
+    border-color var(--dur-fast) var(--ease-tui);
+}
+.metui-rail__item:hover { background: var(--surface-2); color: var(--seed); }
+.metui-rail__item:focus-visible { outline: 2px solid var(--seed); outline-offset: -2px; }
+.metui-rail__item.active {
+  background: var(--tonal-20);
+  color: var(--seed);
+  font-weight: 700;
+  border-left-color: var(--seed);
+}
+.metui-rail__glyph {
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--fg-subtle);
+  transition: color var(--dur-fast);
+}
+.metui-rail__item:hover .metui-rail__glyph,
+.metui-rail__item.active .metui-rail__glyph { color: var(--seed); }
+
+/* ----------------------------------------------------------
+   PAGINATION
+   ---------------------------------------------------------- */
+.metui-pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+  flex-wrap: wrap;
+}
+.metui-pagination__btn {
+  display: flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding: 0 var(--sp-md);
+  background: none;
+  border: 1px solid var(--outline);
+  color: var(--fg-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-tui), border-color var(--dur-fast) var(--ease-tui);
+}
+.metui-pagination__btn:hover:not(:disabled) { color: var(--seed); border-color: var(--seed); }
+.metui-pagination__btn:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
+.metui-pagination__btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.metui-pagination__pages { display: flex; gap: var(--sp-xs); }
+.metui-pagination__page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  background: none;
+  border: 1px solid var(--outline);
+  color: var(--fg-muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease-tui);
+}
+.metui-pagination__page:hover { color: var(--seed); border-color: var(--seed); }
+.metui-pagination__page:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
+.metui-pagination__page.active {
+  background: var(--seed);
+  color: var(--bg);
+  border-color: var(--seed);
+  font-weight: 700;
+}
+.metui-pagination__ellipsis {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-xs);
+  color: var(--fg-subtle);
+  min-height: var(--touch-target);
+  user-select: none;
+}
+
+/* demo helpers */
+.demo-surface {
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  padding: var(--sp-lg);
+}
+.demo-row {
+  display: flex;
+  gap: var(--sp-xl);
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+</style>
 </head>
 <body>
+
 <header class="section-header">
-  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0</div>
+  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0 / 03</div>
   <h1 class="section-header__title">^ 03_NAVIGATION</h1>
-  <p class="section-header__desc">Navigation bars, breadcrumbs, tabs, and directory trails.</p>
+  <p class="section-header__desc">Nav bars, tabs, breadcrumbs, vertical rail, and pagination. All keyboard-navigable.</p>
 </header>
-<div class="demo-box">
-  <div class="demo-box__label">// SECTION_STUB</div>
-  <p style="color:var(--fg-muted);font-size:0.85rem;margin-bottom:var(--sp-md)">
-    This section is queued for implementation. Drop the completed
-    <code>03-navigation.html</code> into the <code>sections/</code> folder to replace this stub.
+
+<!-- NAVBAR -->
+<section class="subsection" aria-labelledby="navbar-label">
+  <div id="navbar-label" class="subsection__label">03.1 — Navbar</div>
+
+  <nav class="metui-navbar" aria-label="Primary navigation demo">
+    <div class="metui-navbar__brand">METUI_v2</div>
+    <div class="metui-navbar__items">
+      <button class="metui-navbar__item active" onclick="navSelect(this)">
+        <span class="metui-navbar__item-index">[01]</span> HOME
+      </button>
+      <button class="metui-navbar__item" onclick="navSelect(this)">
+        <span class="metui-navbar__item-index">[02]</span> FILES
+      </button>
+      <button class="metui-navbar__item" onclick="navSelect(this)">
+        <span class="metui-navbar__item-index">[03]</span> NETWORK
+      </button>
+      <button class="metui-navbar__item" onclick="navSelect(this)">
+        <span class="metui-navbar__item-index">[04]</span> LOGS
+      </button>
+      <button class="metui-navbar__item" onclick="navSelect(this)">
+        <span class="metui-navbar__item-index">[05]</span> CONFIG
+      </button>
+    </div>
+    <div class="metui-navbar__end">
+      <span class="metui-navbar__badge metui-navbar__badge--ok">STATUS: READY</span>
+    </div>
+  </nav>
+  <p style="font-size:0.72rem;color:var(--fg-subtle);margin-top:var(--sp-sm)">
+    // Active indicator: seed-color 3px underline. Bracketed index <code>[01]</code> fades to tonal on active. Click any item.
   </p>
-  <div style="border-left:3px solid var(--tonal-40);padding:var(--sp-md);background:color-mix(in srgb,var(--seed) 4%,var(--bg))">
-    <div style="font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">Contents_Planned</div>
-    <p style="font-size:0.82rem;color:var(--fg-muted)">Navigation bars, breadcrumbs, tabs, and directory trails.</p>
+</section>
+
+<!-- TABS -->
+<section class="subsection" aria-labelledby="tabs-label">
+  <div id="tabs-label" class="subsection__label">03.2 — Tabs</div>
+
+  <div class="metui-tabs" id="main-tabs">
+    <div class="metui-tabs__strip" role="tablist" aria-label="System monitor tabs">
+      <button class="metui-tabs__tab active" role="tab" aria-selected="true"
+              aria-controls="panel-proc" id="tab-proc" onclick="switchTab(this,'panel-proc')">
+        <span class="metui-tabs__tab-glyph">#</span> PROCESSES
+      </button>
+      <button class="metui-tabs__tab" role="tab" aria-selected="false"
+              aria-controls="panel-net" id="tab-net" onclick="switchTab(this,'panel-net')">
+        <span class="metui-tabs__tab-glyph">^</span> NETWORK
+      </button>
+      <button class="metui-tabs__tab" role="tab" aria-selected="false"
+              aria-controls="panel-disk" id="tab-disk" onclick="switchTab(this,'panel-disk')">
+        <span class="metui-tabs__tab-glyph">[]</span> DISK
+      </button>
+      <button class="metui-tabs__tab" role="tab" aria-selected="false"
+              aria-controls="panel-logs" id="tab-logs" onclick="switchTab(this,'panel-logs')">
+        <span class="metui-tabs__tab-glyph">></span> LOGS
+      </button>
+    </div>
+    <div class="metui-tabs__panels">
+      <div class="metui-tabs__panel active" id="panel-proc" role="tabpanel" aria-labelledby="tab-proc">
+        <span style="color:var(--seed)">PID    NAME              CPU      MEM</span><br>
+        1042   kernel_sched      0.02%    2.1GB<br>
+        2218   metui_server      1.4%     512MB<br>
+        3301   log_daemon        0.00%    64MB
+      </div>
+      <div class="metui-tabs__panel" id="panel-net" role="tabpanel" aria-labelledby="tab-net">
+        <span style="color:var(--seed)">IFACE   RX       TX       STATUS</span><br>
+        eth0    1.2GB    340MB    <span style="color:var(--green)">UP</span><br>
+        lo      22MB     22MB     <span style="color:var(--green)">UP</span><br>
+        wlan0   —        —        <span style="color:var(--fg-subtle)">DOWN</span>
+      </div>
+      <div class="metui-tabs__panel" id="panel-disk" role="tabpanel" aria-labelledby="tab-disk">
+        <span style="color:var(--seed)">MOUNT   SIZE    USED    AVAIL   USE%</span><br>
+        /       500GB   210GB   290GB   42%<br>
+        /home   2TB     1.1TB   900GB   55%<br>
+        /tmp    8GB     1.2GB   6.8GB   15%
+      </div>
+      <div class="metui-tabs__panel" id="panel-logs" role="tabpanel" aria-labelledby="tab-logs">
+        <span style="color:var(--green)">[OK]</span> <span style="color:var(--fg-subtle)">09:14:22</span> boot sequence complete<br>
+        <span style="color:var(--yellow)">[WR]</span> <span style="color:var(--fg-subtle)">09:15:01</span> disk usage above 50%<br>
+        <span style="color:var(--red)">[ER]</span> <span style="color:var(--fg-subtle)">09:16:44</span> auth failure — port 22
+      </div>
+    </div>
   </div>
-</div>
+</section>
+
+<!-- BREADCRUMB -->
+<section class="subsection" aria-labelledby="breadcrumb-label">
+  <div id="breadcrumb-label" class="subsection__label">03.3 — Breadcrumb / Directory Trail</div>
+
+  <div style="display:flex;flex-direction:column;gap:var(--sp-md)">
+
+    <div class="demo-surface">
+      <div style="font-size:0.6rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">// PATH_STYLE</div>
+      <nav class="metui-breadcrumb" aria-label="File path example">
+        <ol class="metui-breadcrumb__list">
+          <li class="metui-breadcrumb__item">
+            <a href="#" class="metui-breadcrumb__link">root</a>
+            <span class="metui-breadcrumb__sep">/</span>
+          </li>
+          <li class="metui-breadcrumb__item">
+            <a href="#" class="metui-breadcrumb__link">components</a>
+            <span class="metui-breadcrumb__sep">/</span>
+          </li>
+          <li class="metui-breadcrumb__item">
+            <span class="metui-breadcrumb__current">navigation</span>
+          </li>
+        </ol>
+      </nav>
+    </div>
+
+    <div class="demo-surface">
+      <div style="font-size:0.6rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">// DEEP_PATH_COLLAPSED</div>
+      <nav class="metui-breadcrumb" aria-label="Deep file path">
+        <ol class="metui-breadcrumb__list">
+          <li class="metui-breadcrumb__item">
+            <a href="#" class="metui-breadcrumb__link">root</a>
+            <span class="metui-breadcrumb__sep">/</span>
+          </li>
+          <li class="metui-breadcrumb__item">
+            <span class="metui-breadcrumb__ellipsis">...</span>
+            <span class="metui-breadcrumb__sep">/</span>
+          </li>
+          <li class="metui-breadcrumb__item">
+            <a href="#" class="metui-breadcrumb__link">sections</a>
+            <span class="metui-breadcrumb__sep">/</span>
+          </li>
+          <li class="metui-breadcrumb__item">
+            <span class="metui-breadcrumb__current">03-navigation.html</span>
+          </li>
+        </ol>
+      </nav>
+    </div>
+
+  </div>
+</section>
+
+<!-- VERTICAL RAIL -->
+<section class="subsection" aria-labelledby="rail-label">
+  <div id="rail-label" class="subsection__label">03.4 — Vertical Nav Rail</div>
+
+  <div class="demo-row">
+    <nav class="metui-rail" aria-label="Sidebar navigation demo">
+      <div class="metui-rail__group-label">Core</div>
+      <button class="metui-rail__item active" onclick="railSelect(this)" aria-current="page">
+        <span class="metui-rail__glyph">#</span> 00_OVERVIEW
+      </button>
+      <button class="metui-rail__item" onclick="railSelect(this)">
+        <span class="metui-rail__glyph">$</span> 01_TOKENS
+      </button>
+      <hr class="metui-rail__divider">
+      <div class="metui-rail__group-label">Components</div>
+      <button class="metui-rail__item" onclick="railSelect(this)">
+        <span class="metui-rail__glyph">!</span> 02_ACTIONS
+      </button>
+      <button class="metui-rail__item" onclick="railSelect(this)">
+        <span class="metui-rail__glyph">^</span> 03_NAVIGATION
+      </button>
+      <button class="metui-rail__item" onclick="railSelect(this)">
+        <span class="metui-rail__glyph">*</span> 04_SELECTION
+      </button>
+      <button class="metui-rail__item" onclick="railSelect(this)">
+        <span class="metui-rail__glyph">[]</span> 05_CONTAINMENT
+      </button>
+    </nav>
+
+    <div style="flex:1;min-width:200px">
+      <table class="spec-table">
+        <thead>
+          <tr><th>MD3 Concept</th><th>TUI Interpretation</th><th>Implementation</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Active Indicator</td>
+            <td>Left border + tonal bg</td>
+            <td>3px solid <code>--seed</code>; <code>--tonal-20</code> background</td>
+          </tr>
+          <tr>
+            <td>Navigation Rail</td>
+            <td>Full-width item list</td>
+            <td>48px min-height, left-aligned glyphs</td>
+          </tr>
+          <tr>
+            <td>Group Labels</td>
+            <td><code>// comment</code> style</td>
+            <td>0.58rem caps, letter-spaced, non-interactive</td>
+          </tr>
+          <tr>
+            <td>Dividers</td>
+            <td><code>&lt;hr&gt;</code></td>
+            <td>1px <code>--surface-2</code> horizontal rule</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PAGINATION -->
+<section class="subsection" aria-labelledby="pagination-label">
+  <div id="pagination-label" class="subsection__label">03.5 — Pagination</div>
+
+  <nav class="metui-pagination" aria-label="Results pagination" id="pager">
+    <button class="metui-pagination__btn" id="prev-btn"
+            onclick="changePage(-1)" aria-label="Previous page">
+      &lt; PREV
+    </button>
+    <div class="metui-pagination__pages" id="page-btns">
+      <button class="metui-pagination__page" onclick="setPage(this,1)"  aria-label="Page 1">1</button>
+      <button class="metui-pagination__page active" onclick="setPage(this,2)" aria-label="Page 2, current" aria-current="page">2</button>
+      <button class="metui-pagination__page" onclick="setPage(this,3)"  aria-label="Page 3">3</button>
+      <span class="metui-pagination__ellipsis" aria-hidden="true">...</span>
+      <button class="metui-pagination__page" onclick="setPage(this,9)"  aria-label="Page 9">9</button>
+    </div>
+    <button class="metui-pagination__btn" id="next-btn"
+            onclick="changePage(1)" aria-label="Next page">
+      NEXT &gt;
+    </button>
+  </nav>
+</section>
+
+<!-- SPEC TABLE -->
+<section class="subsection" aria-labelledby="spec-label">
+  <div id="spec-label" class="subsection__label">03.6 — MD3 Mapping</div>
+  <table class="spec-table">
+    <thead>
+      <tr><th>MD3 Component</th><th>METUI Class</th><th>TUI Treatment</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Navigation Bar</td>
+        <td><code>.metui-navbar</code></td>
+        <td>Bracketed index <code>[01]</code> + primary underline on active</td>
+      </tr>
+      <tr>
+        <td>Tab Bar</td>
+        <td><code>.metui-tabs</code></td>
+        <td>Glyph prefix + 3px bottom border indicator</td>
+      </tr>
+      <tr>
+        <td>Breadcrumbs</td>
+        <td><code>.metui-breadcrumb</code></td>
+        <td>Slash-separated path; active = reverse-video block</td>
+      </tr>
+      <tr>
+        <td>Navigation Rail</td>
+        <td><code>.metui-rail</code></td>
+        <td>Left-border indicator + tonal background</td>
+      </tr>
+      <tr>
+        <td>Pagination</td>
+        <td><code>.metui-pagination</code></td>
+        <td>Outlined page buttons; active = filled seed</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
 <script>
+function navSelect(btn) {
+  btn.closest('.metui-navbar').querySelectorAll('.metui-navbar__item')
+     .forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function switchTab(btn, panelId) {
+  const root = btn.closest('.metui-tabs');
+  root.querySelectorAll('.metui-tabs__tab').forEach(t => {
+    t.classList.remove('active');
+    t.setAttribute('aria-selected', 'false');
+  });
+  root.querySelectorAll('.metui-tabs__panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  btn.setAttribute('aria-selected', 'true');
+  document.getElementById(panelId).classList.add('active');
+}
+
+function railSelect(btn) {
+  btn.closest('.metui-rail').querySelectorAll('.metui-rail__item').forEach(b => {
+    b.classList.remove('active');
+    b.removeAttribute('aria-current');
+  });
+  btn.classList.add('active');
+  btn.setAttribute('aria-current', 'page');
+}
+
+let currentPage = 2;
+const totalPages = 9;
+
+function setPage(btn, num) {
+  currentPage = num;
+  updatePager();
+}
+
+function changePage(delta) {
+  currentPage = Math.max(1, Math.min(totalPages, currentPage + delta));
+  updatePager();
+}
+
+function updatePager() {
+  document.querySelectorAll('.metui-pagination__page').forEach(p => {
+    const num = parseInt(p.textContent);
+    const isActive = num === currentPage;
+    p.classList.toggle('active', isActive);
+    if (isActive) p.setAttribute('aria-current', 'page');
+    else p.removeAttribute('aria-current');
+  });
+  document.getElementById('prev-btn').disabled = currentPage === 1;
+  document.getElementById('next-btn').disabled = currentPage === totalPages;
+}
+
 window.addEventListener('message', e => {
   if (e.data?.type !== 'METUI_THEME') return;
   const root = document.documentElement;
