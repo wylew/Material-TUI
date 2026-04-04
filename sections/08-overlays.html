@@ -6,25 +6,677 @@
 <title>METUI | 08_OVERLAYS</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="metui-base.css">
+<style>
+
+/* ============================================================
+   METUI OVERLAY COMPONENTS
+
+   .metui-tooltip          — plain + rich hover tooltips
+   .metui-dialog           — modal dialog (uses <dialog>)
+   .metui-sheet            — side sheet panel
+   .metui-snackbar         — toast notification
+   .metui-popover          — anchored rich popover
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   TOOLTIP
+   Wrap trigger in .metui-tooltip-anchor; tooltip is sibling
+   ---------------------------------------------------------- */
+.metui-tooltip-anchor {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.metui-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  z-index: 500;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition:
+    opacity  var(--dur-std) var(--ease-tui),
+    transform var(--dur-std) var(--ease-tui);
+  white-space: nowrap;
+}
+.metui-tooltip-anchor:hover   .metui-tooltip,
+.metui-tooltip-anchor:focus-within .metui-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Plain tooltip */
+.metui-tooltip--plain {
+  background: var(--surface-2);
+  border: 1px solid var(--yellow);
+  color: var(--yellow);
+  font-size: 0.72rem;
+  padding: 3px var(--sp-sm);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.4);
+}
+.metui-tooltip--plain::before {
+  content: "╔ ";
+  opacity: 0.5;
+}
+.metui-tooltip--plain::after {
+  content: " ╗";
+  opacity: 0.5;
+}
+
+/* Rich tooltip */
+.metui-tooltip--rich {
+  background: var(--surface);
+  border: 2px double var(--seed);
+  color: var(--fg);
+  font-size: 0.78rem;
+  padding: var(--sp-md);
+  min-width: 200px;
+  white-space: normal;
+  box-shadow: 6px 6px 0 rgba(0,0,0,0.4);
+  pointer-events: auto;
+}
+.metui-tooltip--rich .tooltip-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--seed);
+  border-bottom: 1px solid var(--outline);
+  padding-bottom: var(--sp-xs);
+  margin-bottom: var(--sp-sm);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.metui-tooltip--rich .tooltip-body {
+  color: var(--fg-muted);
+  line-height: 1.6;
+  margin-bottom: var(--sp-sm);
+}
+.metui-tooltip--rich .tooltip-action {
+  font-size: 0.7rem;
+  color: var(--seed);
+  cursor: pointer;
+  text-decoration: none;
+}
+.metui-tooltip--rich .tooltip-action::before { content: "> "; color: var(--fg-subtle); }
+
+/* ----------------------------------------------------------
+   DIALOG  (native <dialog> element)
+   ---------------------------------------------------------- */
+.metui-dialog {
+  border: 2px solid var(--outline);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  padding: 0;
+  max-width: min(90vw, 480px);
+  width: 100%;
+}
+.metui-dialog::backdrop {
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(2px);
+}
+
+.metui-dialog--danger  { border-color: var(--red); }
+.metui-dialog--success { border-color: var(--green); }
+.metui-dialog--info    { border-color: var(--cyan); }
+
+.metui-dialog__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-md) var(--sp-lg);
+  border-bottom: 1px solid var(--outline);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.metui-dialog--danger  .metui-dialog__header { color: var(--red);   border-bottom-color: var(--red); }
+.metui-dialog--success .metui-dialog__header { color: var(--green); border-bottom-color: var(--green); }
+.metui-dialog--info    .metui-dialog__header { color: var(--cyan);  border-bottom-color: var(--cyan); }
+
+.metui-dialog__body {
+  padding: var(--sp-lg);
+  font-size: 0.85rem;
+  color: var(--fg-muted);
+  line-height: 1.7;
+}
+.metui-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-sm);
+  padding: var(--sp-md) var(--sp-lg);
+  border-top: 1px solid var(--outline);
+  flex-wrap: wrap;
+}
+
+/* ----------------------------------------------------------
+   SIDE SHEET  (fixed right panel)
+   ---------------------------------------------------------- */
+.metui-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-std) var(--ease-smooth);
+}
+.metui-sheet-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.metui-sheet {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(360px, 90vw);
+  background: var(--surface);
+  border-left: 2px solid var(--outline);
+  z-index: 301;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform var(--dur-std) var(--ease-smooth);
+}
+.metui-sheet.open { transform: translateX(0); }
+
+.metui-sheet__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-md) var(--sp-lg);
+  border-bottom: 2px solid var(--outline);
+  flex-shrink: 0;
+}
+.metui-sheet__title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--seed);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.metui-sheet__close {
+  background: none;
+  border: 1px solid var(--outline);
+  color: var(--fg-subtle);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  padding: 4px var(--sp-sm);
+  cursor: pointer;
+  min-height: var(--touch-target);
+  min-width: var(--touch-target);
+  transition: color var(--dur-fast), border-color var(--dur-fast);
+}
+.metui-sheet__close:hover { color: var(--red); border-color: var(--red); }
+.metui-sheet__close:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
+
+.metui-sheet__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-lg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--outline) transparent;
+}
+.metui-sheet__footer {
+  padding: var(--sp-md) var(--sp-lg);
+  border-top: 1px solid var(--outline);
+  flex-shrink: 0;
+  display: flex;
+  gap: var(--sp-sm);
+  justify-content: flex-end;
+}
+
+/* ----------------------------------------------------------
+   SNACKBAR  (toast notification, appears at bottom)
+   ---------------------------------------------------------- */
+#snackbar-stack {
+  position: fixed;
+  bottom: var(--sp-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 600;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--sp-sm);
+  align-items: center;
+  pointer-events: none;
+  width: min(480px, 90vw);
+}
+
+.metui-snackbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  padding: var(--sp-sm) var(--sp-md);
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 0.82rem;
+  font-family: 'JetBrains Mono', monospace;
+  width: 100%;
+  pointer-events: auto;
+  border-left: 4px solid var(--bg);
+  animation: snackSlide 0.2s steps(4) forwards;
+}
+@keyframes snackSlide {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.metui-snackbar--ok      { border-left-color: var(--green); }
+.metui-snackbar--error   { border-left-color: var(--red); background: var(--red); color: var(--bg); }
+.metui-snackbar--warning { border-left-color: var(--yellow); }
+.metui-snackbar--info    { border-left-color: var(--cyan); }
+
+.metui-snackbar__msg { flex: 1; }
+.metui-snackbar__prefix {
+  font-weight: 700;
+  margin-right: var(--sp-xs);
+  flex-shrink: 0;
+}
+.metui-snackbar__dismiss {
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  cursor: pointer;
+  opacity: 0.7;
+  padding: 2px var(--sp-xs);
+  flex-shrink: 0;
+}
+.metui-snackbar__dismiss:hover { opacity: 1; }
+
+/* shared button styles for demos */
+.metui-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--sp-xs); min-height: var(--touch-target); padding: 0 var(--sp-lg);
+  font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px; cursor: pointer; border: none;
+  background: transparent; color: var(--fg);
+  transition: background var(--dur-fast) var(--ease-tui), color var(--dur-fast) var(--ease-tui),
+              border-color var(--dur-fast) var(--ease-tui);
+  white-space: nowrap;
+}
+.metui-btn:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
+.metui-btn--filled   { background: var(--seed); color: var(--bg); }
+.metui-btn--filled:hover { background: var(--tonal-80); }
+.metui-btn--outlined { border: 1px solid var(--seed); color: var(--seed); }
+.metui-btn--outlined:hover { background: var(--tonal-10); }
+.metui-btn--text     { color: var(--seed); padding: 0 var(--sp-sm); }
+.metui-btn--text::before { content: "> "; color: var(--fg-subtle); }
+.metui-btn--danger.metui-btn--outlined { border-color: var(--red); color: var(--red); }
+.metui-btn--danger.metui-btn--filled   { background: var(--red); color: var(--bg); }
+
+/* CODE BLOCK */
+.code-block { position: relative; background: var(--surface); border: 1px solid var(--surface-2); border-left: 3px solid var(--tonal-40); margin-top: var(--sp-md); }
+.code-block__header { display: flex; align-items: center; justify-content: space-between; padding: var(--sp-xs) var(--sp-md); border-bottom: 1px solid var(--surface-2); background: var(--surface-2); }
+.code-block__lang { font-size: 0.6rem; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: 2px; }
+.code-block__copy { background: none; border: 1px solid var(--outline); color: var(--fg-subtle); font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; padding: 2px var(--sp-sm); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: color var(--dur-fast), border-color var(--dur-fast); }
+.code-block__copy:hover { color: var(--seed); border-color: var(--seed); }
+.code-block__copy:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
+.code-block__copy.copied { color: var(--green); border-color: var(--green); }
+.code-block pre { padding: var(--sp-md); overflow-x: auto; font-size: 0.78rem; line-height: 1.7; color: var(--fg-muted); margin: 0; white-space: pre; scrollbar-width: thin; scrollbar-color: var(--outline) transparent; }
+.code-block pre .hl-tag  { color: var(--cyan); }
+.code-block pre .hl-attr { color: var(--seed); }
+.code-block pre .hl-val  { color: var(--green); }
+.code-block pre .hl-com  { color: var(--fg-subtle); font-style: italic; }
+
+.demo-row { display: flex; gap: var(--sp-lg); flex-wrap: wrap; align-items: flex-start; padding: var(--sp-md) 0; }
+.demo-trigger-label { font-size: 0.6rem; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: 2px; margin-bottom: var(--sp-sm); }
+
+/* underline dotted trigger style */
+.tooltip-trigger {
+  text-decoration: underline dotted var(--yellow);
+  cursor: help;
+  color: var(--fg);
+  font-size: 0.85rem;
+  padding: var(--sp-sm);
+  display: inline-block;
+  min-height: var(--touch-target);
+  display: inline-flex;
+  align-items: center;
+}
+</style>
 </head>
 <body>
+
 <header class="section-header">
-  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0</div>
+  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0 / 08</div>
   <h1 class="section-header__title">@ 08_OVERLAYS</h1>
-  <p class="section-header__desc">Tooltips, modals, side-sheets, and snackbars.</p>
+  <p class="section-header__desc">Tooltips, dialogs, side sheets, and snackbars. All interactive — click the triggers.</p>
 </header>
-<div class="demo-box">
-  <div class="demo-box__label">// SECTION_STUB</div>
-  <p style="color:var(--fg-muted);font-size:0.85rem;margin-bottom:var(--sp-md)">
-    This section is queued for implementation. Drop the completed
-    <code>08-overlays.html</code> into the <code>sections/</code> folder to replace this stub.
-  </p>
-  <div style="border-left:3px solid var(--tonal-40);padding:var(--sp-md);background:color-mix(in srgb,var(--seed) 4%,var(--bg))">
-    <div style="font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">Contents_Planned</div>
-    <p style="font-size:0.82rem;color:var(--fg-muted)">Tooltips, modals, side-sheets, and snackbars.</p>
+
+<!-- 08.1 TOOLTIPS -->
+<section class="subsection" aria-labelledby="tooltip-label">
+  <div id="tooltip-label" class="subsection__label">08.1 — Tooltips (hover to reveal)</div>
+
+  <div class="demo-row">
+
+    <div>
+      <div class="demo-trigger-label">// PLAIN_TOOLTIP</div>
+      <div class="metui-tooltip-anchor">
+        <span class="tooltip-trigger" tabindex="0" aria-describedby="tt-plain">Hover_For_Info</span>
+        <div class="metui-tooltip metui-tooltip--plain" role="tooltip" id="tt-plain">PTR: 0x4F2A · READ_ONLY</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="demo-trigger-label">// RICH_TOOLTIP</div>
+      <div class="metui-tooltip-anchor">
+        <button class="metui-btn metui-btn--filled" aria-describedby="tt-rich">[ SYSTEM_STATUS ]</button>
+        <div class="metui-tooltip metui-tooltip--rich" role="tooltip" id="tt-rich">
+          <div class="tooltip-title">RICH_OVERLAY_v1</div>
+          <div class="tooltip-body">Provides detailed metadata on the active process. Includes sub-actions.</div>
+          <a href="#" class="tooltip-action" onclick="return false">VIEW_DETAILS</a>
+        </div>
+      </div>
+    </div>
+
   </div>
-</div>
+
+  <table class="spec-table" style="margin-top:var(--sp-md)">
+    <thead><tr><th>Type</th><th>Class</th><th>Border</th><th>Trigger</th></tr></thead>
+    <tbody>
+      <tr><td>Plain</td><td><code>.metui-tooltip--plain</code></td><td>1px solid <code>--yellow</code></td><td>hover / focus-within on anchor</td></tr>
+      <tr><td>Rich</td><td><code>.metui-tooltip--rich</code></td><td>2px double <code>--seed</code></td><td>hover / focus-within on anchor</td></tr>
+    </tbody>
+  </table>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this,'tooltip')">COPY</button>
+    </div>
+    <pre id="code-tooltip"><span class="hl-com">&lt;!-- Plain tooltip --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-tooltip-anchor"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;span</span> <span class="hl-attr">tabindex</span>=<span class="hl-val">"0"</span> <span class="hl-attr">aria-describedby</span>=<span class="hl-val">"tt1"</span><span class="hl-tag">&gt;</span>Hover_For_Info<span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-tooltip metui-tooltip--plain"</span>
+       <span class="hl-attr">role</span>=<span class="hl-val">"tooltip"</span> <span class="hl-attr">id</span>=<span class="hl-val">"tt1"</span><span class="hl-tag">&gt;</span>PTR: 0x4F2A<span class="hl-tag">&lt;/div&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span>
+
+<span class="hl-com">&lt;!-- Rich tooltip --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-tooltip-anchor"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;button</span> <span class="hl-attr">aria-describedby</span>=<span class="hl-val">"tt2"</span><span class="hl-tag">&gt;</span>Trigger<span class="hl-tag">&lt;/button&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-tooltip metui-tooltip--rich"</span>
+       <span class="hl-attr">role</span>=<span class="hl-val">"tooltip"</span> <span class="hl-attr">id</span>=<span class="hl-val">"tt2"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"tooltip-title"</span><span class="hl-tag">&gt;</span>TITLE<span class="hl-tag">&lt;/div&gt;</span>
+    <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"tooltip-body"</span><span class="hl-tag">&gt;</span>Body text here.<span class="hl-tag">&lt;/div&gt;</span>
+    <span class="hl-tag">&lt;a</span> <span class="hl-attr">href</span>=<span class="hl-val">"#"</span> <span class="hl-attr">class</span>=<span class="hl-val">"tooltip-action"</span><span class="hl-tag">&gt;</span>ACTION<span class="hl-tag">&lt;/a&gt;</span>
+  <span class="hl-tag">&lt;/div&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+  </div>
+</section>
+
+<!-- 08.2 DIALOGS -->
+<section class="subsection" aria-labelledby="dialog-label">
+  <div id="dialog-label" class="subsection__label">08.2 — Modal Dialogs</div>
+
+  <div class="demo-row">
+    <button class="metui-btn metui-btn--outlined metui-btn--danger"
+            onclick="document.getElementById('dlg-danger').showModal()">
+      Open danger dialog
+    </button>
+    <button class="metui-btn metui-btn--outlined"
+            onclick="document.getElementById('dlg-info').showModal()">
+      Open info dialog
+    </button>
+    <button class="metui-btn metui-btn--outlined"
+            onclick="document.getElementById('dlg-success').showModal()">
+      Open success dialog
+    </button>
+  </div>
+
+  <!-- Danger -->
+  <dialog id="dlg-danger" class="metui-dialog metui-dialog--danger"
+          aria-labelledby="dlg-danger-title">
+    <header class="metui-dialog__header">
+      <span aria-hidden="true">!</span>
+      <span id="dlg-danger-title">SYSTEM_HALT — CONFIRM_DELETE</span>
+    </header>
+    <div class="metui-dialog__body">
+      <p>This will permanently delete <code>prod_database.tar.gz</code> and all associated backups.</p>
+      <br>
+      <p>This action cannot be undone. Type <code>DELETE</code> to confirm.</p>
+    </div>
+    <footer class="metui-dialog__footer">
+      <button class="metui-btn metui-btn--text" onclick="this.closest('dialog').close()">CANCEL</button>
+      <button class="metui-btn metui-btn--filled metui-btn--danger"
+              onclick="this.closest('dialog').close(); toast('File deleted.','error')">CONFIRM_DELETE</button>
+    </footer>
+  </dialog>
+
+  <!-- Info -->
+  <dialog id="dlg-info" class="metui-dialog metui-dialog--info"
+          aria-labelledby="dlg-info-title">
+    <header class="metui-dialog__header">
+      <span aria-hidden="true">i</span>
+      <span id="dlg-info-title">SYSTEM_INFO — RELEASE_NOTES</span>
+    </header>
+    <div class="metui-dialog__body">
+      <p>METUI v2.0.0 is now available. This release includes:</p>
+      <br>
+      <p>— Full class-based component API<br>
+         — Seed-color tonal engine via color-mix()<br>
+         — Native &lt;dialog&gt; element integration<br>
+         — 48px touch targets throughout</p>
+    </div>
+    <footer class="metui-dialog__footer">
+      <button class="metui-btn metui-btn--filled" onclick="this.closest('dialog').close()">ACKNOWLEDGE</button>
+    </footer>
+  </dialog>
+
+  <!-- Success -->
+  <dialog id="dlg-success" class="metui-dialog metui-dialog--success"
+          aria-labelledby="dlg-success-title">
+    <header class="metui-dialog__header">
+      <span aria-hidden="true">✓</span>
+      <span id="dlg-success-title">DEPLOY_COMPLETE</span>
+    </header>
+    <div class="metui-dialog__body">
+      <p>PROD_BUILD_v4.2.1 deployed successfully to all 3 regions.</p>
+      <br>
+      <p style="font-size:0.75rem;color:var(--fg-subtle)">us-east-1 · eu-west-2 · ap-southeast-1</p>
+    </div>
+    <footer class="metui-dialog__footer">
+      <button class="metui-btn metui-btn--text" onclick="this.closest('dialog').close()">VIEW_LOGS</button>
+      <button class="metui-btn metui-btn--filled" onclick="this.closest('dialog').close()">DONE</button>
+    </footer>
+  </dialog>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this,'dialog')">COPY</button>
+    </div>
+    <pre id="code-dialog"><span class="hl-com">&lt;!-- Trigger --&gt;</span>
+<span class="hl-tag">&lt;button</span> <span class="hl-attr">onclick</span>=<span class="hl-val">"document.getElementById('my-dialog').showModal()"</span><span class="hl-tag">&gt;</span>
+  Open
+<span class="hl-tag">&lt;/button&gt;</span>
+
+<span class="hl-com">&lt;!-- Dialog: add --danger / --success / --info --&gt;</span>
+<span class="hl-tag">&lt;dialog</span> <span class="hl-attr">id</span>=<span class="hl-val">"my-dialog"</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-dialog metui-dialog--danger"</span>
+        <span class="hl-attr">aria-labelledby</span>=<span class="hl-val">"dlg-title"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;header</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-dialog__header"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">id</span>=<span class="hl-val">"dlg-title"</span><span class="hl-tag">&gt;</span>DIALOG_TITLE<span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;/header&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-dialog__body"</span><span class="hl-tag">&gt;</span>
+    Body content here.
+  <span class="hl-tag">&lt;/div&gt;</span>
+  <span class="hl-tag">&lt;footer</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-dialog__footer"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;button</span> <span class="hl-attr">onclick</span>=<span class="hl-val">"this.closest('dialog').close()"</span><span class="hl-tag">&gt;</span>CANCEL<span class="hl-tag">&lt;/button&gt;</span>
+    <span class="hl-tag">&lt;button</span> <span class="hl-attr">onclick</span>=<span class="hl-val">"this.closest('dialog').close()"</span><span class="hl-tag">&gt;</span>CONFIRM<span class="hl-tag">&lt;/button&gt;</span>
+  <span class="hl-tag">&lt;/footer&gt;</span>
+<span class="hl-tag">&lt;/dialog&gt;</span></pre>
+  </div>
+</section>
+
+<!-- 08.3 SIDE SHEET -->
+<section class="subsection" aria-labelledby="sheet-label">
+  <div id="sheet-label" class="subsection__label">08.3 — Side Sheet</div>
+
+  <button class="metui-btn metui-btn--outlined" onclick="openSheet()">
+    Open side sheet →
+  </button>
+
+  <div class="metui-sheet-overlay" id="sheet-overlay" onclick="closeSheet()" aria-hidden="true"></div>
+
+  <aside class="metui-sheet" id="main-sheet" role="complementary" aria-label="Detail panel">
+    <div class="metui-sheet__header">
+      <span class="metui-sheet__title">// PROCESS_DETAIL</span>
+      <button class="metui-sheet__close" onclick="closeSheet()" aria-label="Close side sheet">[×]</button>
+    </div>
+    <div class="metui-sheet__body">
+      <div style="font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">// PID_1042</div>
+      <div style="font-size:1.0rem;font-weight:700;color:var(--seed);margin-bottom:var(--sp-md)">kernel_sched</div>
+      <table class="spec-table">
+        <tbody>
+          <tr><td style="color:var(--fg-subtle);width:80px">STATUS</td><td style="color:var(--green)">RUNNING</td></tr>
+          <tr><td style="color:var(--fg-subtle)">CPU</td><td>0.02%</td></tr>
+          <tr><td style="color:var(--fg-subtle)">MEM</td><td>2.1 GB</td></tr>
+          <tr><td style="color:var(--fg-subtle)">THREADS</td><td>4</td></tr>
+          <tr><td style="color:var(--fg-subtle)">OWNER</td><td>root</td></tr>
+          <tr><td style="color:var(--fg-subtle)">STARTED</td><td>09:14:22</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:var(--sp-lg);font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">// RECENT_LOGS</div>
+      <div style="font-size:0.75rem;color:var(--fg-muted);line-height:2">
+        <span style="color:var(--green)">[OK]</span> 09:14:22 boot sequence complete<br>
+        <span style="color:var(--green)">[OK]</span> 09:14:23 scheduler initialized<br>
+        <span style="color:var(--yellow)">[WR]</span> 09:15:01 load spike detected
+      </div>
+    </div>
+    <div class="metui-sheet__footer">
+      <button class="metui-btn metui-btn--outlined metui-btn--danger" onclick="closeSheet()">KILL_PROCESS</button>
+      <button class="metui-btn metui-btn--filled" onclick="closeSheet()">CLOSE</button>
+    </div>
+  </aside>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this,'sheet')">COPY</button>
+    </div>
+    <pre id="code-sheet"><span class="hl-com">&lt;!-- Overlay backdrop --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-sheet-overlay"</span> <span class="hl-attr">id</span>=<span class="hl-val">"overlay"</span>
+     <span class="hl-attr">onclick</span>=<span class="hl-val">"closeSheet()"</span><span class="hl-tag">&gt;&lt;/div&gt;</span>
+
+<span class="hl-com">&lt;!-- Sheet panel --&gt;</span>
+<span class="hl-tag">&lt;aside</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-sheet"</span> <span class="hl-attr">id</span>=<span class="hl-val">"my-sheet"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-sheet__header"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-sheet__title"</span><span class="hl-tag">&gt;</span>// TITLE<span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;button</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-sheet__close"</span>
+            <span class="hl-attr">onclick</span>=<span class="hl-val">"closeSheet()"</span><span class="hl-tag">&gt;</span>[×]<span class="hl-tag">&lt;/button&gt;</span>
+  <span class="hl-tag">&lt;/div&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-sheet__body"</span><span class="hl-tag">&gt;</span>Content here<span class="hl-tag">&lt;/div&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-sheet__footer"</span><span class="hl-tag">&gt;</span>Actions here<span class="hl-tag">&lt;/div&gt;</span>
+<span class="hl-tag">&lt;/aside&gt;</span>
+
+<span class="hl-com">&lt;!-- JS --&gt;</span>
+<span class="hl-tag">&lt;script&gt;</span>
+function openSheet() {
+  document.getElementById('my-sheet').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeSheet() {
+  document.getElementById('my-sheet').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+<span class="hl-tag">&lt;/script&gt;</span></pre>
+  </div>
+</section>
+
+<!-- 08.4 SNACKBAR -->
+<section class="subsection" aria-labelledby="snack-label">
+  <div id="snack-label" class="subsection__label">08.4 — Snackbar / Toast</div>
+
+  <div class="demo-row">
+    <button class="metui-btn metui-btn--outlined" onclick="toast('Operation completed successfully.','ok')">[OK] Toast</button>
+    <button class="metui-btn metui-btn--outlined" onclick="toast('Connection timed out on port 22.','error')">[ER] Toast</button>
+    <button class="metui-btn metui-btn--outlined" onclick="toast('Disk usage above 80% threshold.','warning')">[WR] Toast</button>
+    <button class="metui-btn metui-btn--outlined" onclick="toast('New release v2.1.0 available.','info')">[II] Toast</button>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">JavaScript</span>
+      <button class="code-block__copy" onclick="copyCode(this,'snack')">COPY</button>
+    </div>
+    <pre id="code-snack"><span class="hl-com">// Add snackbar stack to your page:</span>
+<span class="hl-com">// &lt;div id="snackbar-stack"&gt;&lt;/div&gt;</span>
+
+function toast(msg, type = 'ok', duration = 3500) {
+  const prefixes = { ok:'[OK]', error:'[ER]', warning:'[WR]', info:'[II]' };
+  const stack = document.getElementById('snackbar-stack');
+  const el = document.createElement('div');
+  el.className = `metui-snackbar metui-snackbar--${type}`;
+  el.setAttribute('role', 'status');
+  el.innerHTML = `
+    &lt;span class="metui-snackbar__prefix"&gt;${prefixes[type]}&lt;/span&gt;
+    &lt;span class="metui-snackbar__msg"&gt;${msg}&lt;/span&gt;
+    &lt;button class="metui-snackbar__dismiss"
+            onclick="this.parentElement.remove()"&gt;[×]&lt;/button&gt;
+  `;
+  stack.appendChild(el);
+  setTimeout(() => el.remove(), duration);
+}</pre>
+  </div>
+</section>
+
+<!-- 08.5 SPEC TABLE -->
+<section class="subsection" aria-labelledby="spec-label">
+  <div id="spec-label" class="subsection__label">08.5 — MD3 Mapping</div>
+  <table class="spec-table">
+    <thead><tr><th>MD3 Component</th><th>METUI Class</th><th>TUI Treatment</th></tr></thead>
+    <tbody>
+      <tr><td>Plain Tooltip</td><td><code>.metui-tooltip--plain</code></td><td>Single-line box, yellow border, <code>╔ ╗</code> corner chars, 50ms fade</td></tr>
+      <tr><td>Rich Tooltip</td><td><code>.metui-tooltip--rich</code></td><td>Double-border modal, header + body + action link</td></tr>
+      <tr><td>Dialog</td><td><code>.metui-dialog</code></td><td>Native <code>&lt;dialog&gt;</code> — free backdrop, focus trap, Escape key</td></tr>
+      <tr><td>Side Sheet</td><td><code>.metui-sheet</code></td><td>Fixed right panel, slides in via transform, overlay backdrop</td></tr>
+      <tr><td>Snackbar</td><td><code>.metui-snackbar</code></td><td>Bottom-center stack, left border color = type, auto-dismiss</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SNACKBAR STACK HOST -->
+<div id="snackbar-stack" aria-live="polite" aria-atomic="false"></div>
+
 <script>
+function openSheet() {
+  document.getElementById('main-sheet').classList.add('open');
+  document.getElementById('sheet-overlay').classList.add('open');
+}
+function closeSheet() {
+  document.getElementById('main-sheet').classList.remove('open');
+  document.getElementById('sheet-overlay').classList.remove('open');
+}
+
+function toast(msg, type = 'ok', duration = 3500) {
+  const prefixes = { ok: '[OK]', error: '[ER]', warning: '[WR]', info: '[II]' };
+  const stack = document.getElementById('snackbar-stack');
+  const el = document.createElement('div');
+  el.className = `metui-snackbar metui-snackbar--${type}`;
+  el.setAttribute('role', 'status');
+  el.innerHTML = `
+    <span class="metui-snackbar__prefix">${prefixes[type] || '[--]'}</span>
+    <span class="metui-snackbar__msg">${msg}</span>
+    <button class="metui-snackbar__dismiss" onclick="this.parentElement.remove()" aria-label="Dismiss">[×]</button>
+  `;
+  stack.appendChild(el);
+  setTimeout(() => { if (el.parentElement) el.remove(); }, duration);
+}
+
+function copyCode(btn, id) {
+  const pre = document.getElementById('code-' + id);
+  if (!pre) return;
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'COPIED'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
 window.addEventListener('message', e => {
   if (e.data?.type !== 'METUI_THEME') return;
   const root = document.documentElement;
