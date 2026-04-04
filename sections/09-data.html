@@ -6,25 +6,713 @@
 <title>METUI | 09_DATA_DISPLAY</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="metui-base.css">
+<style>
+
+/* ============================================================
+   METUI DATA DISPLAY COMPONENTS
+
+   .metui-list            — item list
+   .metui-data-table      — structured table
+   .metui-badge           — inline status badge
+   .metui-progress        — progress bar
+   .metui-log-stream      — scrollable log output
+   .metui-stat-card       — metric display card
+   ============================================================ */
+
+/* ----------------------------------------------------------
+   LIST
+   ---------------------------------------------------------- */
+.metui-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--outline);
+}
+
+.metui-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  padding: var(--sp-sm) var(--sp-md);
+  min-height: var(--touch-target);
+  border-bottom: 1px solid var(--surface-2);
+  background: transparent;
+  transition: background var(--dur-fast) var(--ease-tui);
+}
+.metui-list__item:last-child { border-bottom: none; }
+
+.metui-list__item--interactive {
+  cursor: pointer;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--fg);
+}
+.metui-list__item--interactive:hover { background: var(--surface-2); }
+.metui-list__item--interactive:focus-visible { outline: 2px solid var(--seed); outline-offset: -2px; }
+
+.metui-list__item--active { border-left: 3px solid var(--seed); background: var(--tonal-10); }
+.metui-list__item--danger  { border-left: 3px solid var(--red); }
+
+.metui-list__leading {
+  width: 4px;
+  align-self: stretch;
+  flex-shrink: 0;
+  background: var(--outline);
+}
+.metui-list__item--active  .metui-list__leading { background: var(--seed); }
+.metui-list__item--danger  .metui-list__leading { background: var(--red); }
+.metui-list__item--success .metui-list__leading { background: var(--green); }
+.metui-list__item--warning .metui-list__leading { background: var(--yellow); }
+
+.metui-list__content { flex: 1; min-width: 0; }
+.metui-list__title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.metui-list__item--active .metui-list__title { color: var(--seed); }
+.metui-list__meta {
+  font-size: 0.68rem;
+  color: var(--fg-subtle);
+  margin-top: 2px;
+}
+.metui-list__meta-sep { margin: 0 4px; color: var(--outline); }
+
+.metui-list__trailing {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* ----------------------------------------------------------
+   DATA TABLE
+   ---------------------------------------------------------- */
+.metui-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  border: 1px solid var(--outline);
+}
+.metui-data-table th {
+  text-align: left;
+  color: var(--fg-subtle);
+  background: var(--surface);
+  border-bottom: 2px solid var(--outline);
+  padding: var(--sp-sm) var(--sp-md);
+  text-transform: uppercase;
+  font-size: 0.62rem;
+  letter-spacing: 1.5px;
+  white-space: nowrap;
+}
+.metui-data-table td {
+  padding: var(--sp-sm) var(--sp-md);
+  border-bottom: 1px solid var(--surface-2);
+  vertical-align: middle;
+  color: var(--fg-muted);
+}
+.metui-data-table tr:last-child td { border-bottom: none; }
+.metui-data-table tr:hover td { background: color-mix(in srgb, var(--seed) 4%, var(--bg)); }
+.metui-data-table__sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.metui-data-table__sortable:hover { color: var(--seed); }
+.metui-data-table__sortable.asc::after  { content: " ▲"; font-size: 0.55rem; }
+.metui-data-table__sortable.desc::after { content: " ▼"; font-size: 0.55rem; }
+.metui-data-table__num { text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
+
+/* ----------------------------------------------------------
+   BADGE
+   ---------------------------------------------------------- */
+.metui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px var(--sp-sm);
+  border: 1px solid;
+  white-space: nowrap;
+  line-height: 1;
+}
+.metui-badge--ok      { color: var(--green);  border-color: var(--green);  background: color-mix(in srgb, var(--green)  10%, transparent); }
+.metui-badge--error   { color: var(--red);    border-color: var(--red);    background: color-mix(in srgb, var(--red)    10%, transparent); }
+.metui-badge--warning { color: var(--yellow); border-color: var(--yellow); background: color-mix(in srgb, var(--yellow) 10%, transparent); }
+.metui-badge--info    { color: var(--cyan);   border-color: var(--cyan);   background: color-mix(in srgb, var(--cyan)   10%, transparent); }
+.metui-badge--idle    { color: var(--fg-subtle); border-color: var(--outline); }
+.metui-badge--seed    { color: var(--bg); border-color: var(--seed); background: var(--seed); }
+
+/* notification dot */
+.metui-badge--dot {
+  position: relative;
+  display: inline-block;
+}
+.metui-badge--dot::after {
+  content: attr(data-count);
+  position: absolute;
+  top: -6px; right: -10px;
+  background: var(--red);
+  color: var(--bg);
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  min-width: 16px;
+  text-align: center;
+  border: 1px solid var(--bg);
+}
+
+/* ----------------------------------------------------------
+   PROGRESS BAR
+   ---------------------------------------------------------- */
+.metui-progress {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+.metui-progress__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.65rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.metui-progress__value { color: var(--seed); font-weight: 700; }
+.metui-progress__track {
+  height: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--outline);
+  overflow: hidden;
+}
+.metui-progress__fill {
+  height: 100%;
+  background: var(--seed);
+  transition: width var(--dur-std) var(--ease-tui);
+}
+.metui-progress--warning .metui-progress__fill { background: var(--yellow); }
+.metui-progress--danger  .metui-progress__fill { background: var(--red); }
+.metui-progress--success .metui-progress__fill { background: var(--green); }
+
+/* indeterminate */
+.metui-progress--indeterminate .metui-progress__fill {
+  width: 40% !important;
+  animation: indeterminate 1.2s steps(8) infinite;
+}
+@keyframes indeterminate {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
+/* ----------------------------------------------------------
+   LOG STREAM
+   ---------------------------------------------------------- */
+.metui-log-stream {
+  background: var(--surface);
+  border: 1px solid var(--outline);
+  border-left: 3px solid var(--tonal-40);
+  font-size: 0.78rem;
+  line-height: 1.9;
+  overflow-y: auto;
+  max-height: 240px;
+  padding: var(--sp-md);
+  scrollbar-width: thin;
+  scrollbar-color: var(--outline) transparent;
+}
+.metui-log-stream__line { display: flex; gap: var(--sp-sm); align-items: baseline; }
+.metui-log-stream__ts   { color: var(--fg-subtle); flex-shrink: 0; font-size: 0.7rem; user-select: none; }
+.metui-log-stream__lvl  { font-weight: 700; flex-shrink: 0; width: 36px; }
+.metui-log-stream__msg  { color: var(--fg-muted); word-break: break-word; }
+.log-ok   { color: var(--green); }
+.log-warn { color: var(--yellow); }
+.log-err  { color: var(--red); }
+.log-info { color: var(--cyan); }
+
+/* ----------------------------------------------------------
+   STAT CARD
+   ---------------------------------------------------------- */
+.metui-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
+  gap: var(--sp-md);
+}
+.metui-stat-card {
+  border: 1px solid var(--outline);
+  padding: var(--sp-md);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+.metui-stat-card__label {
+  font-size: 0.6rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.metui-stat-card__value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--seed);
+  line-height: 1;
+}
+.metui-stat-card__sub {
+  font-size: 0.68rem;
+  color: var(--fg-subtle);
+}
+.metui-stat-card__delta {
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.metui-stat-card__delta--up   { color: var(--green); }
+.metui-stat-card__delta--down { color: var(--red); }
+.metui-stat-card__delta--flat { color: var(--fg-subtle); }
+
+/* CODE BLOCK */
+.code-block { position: relative; background: var(--surface); border: 1px solid var(--surface-2); border-left: 3px solid var(--tonal-40); margin-top: var(--sp-md); }
+.code-block__header { display: flex; align-items: center; justify-content: space-between; padding: var(--sp-xs) var(--sp-md); border-bottom: 1px solid var(--surface-2); background: var(--surface-2); }
+.code-block__lang { font-size: 0.6rem; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: 2px; }
+.code-block__copy { background: none; border: 1px solid var(--outline); color: var(--fg-subtle); font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; padding: 2px var(--sp-sm); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: color var(--dur-fast), border-color var(--dur-fast); }
+.code-block__copy:hover { color: var(--seed); border-color: var(--seed); }
+.code-block__copy.copied { color: var(--green); border-color: var(--green); }
+.code-block pre { padding: var(--sp-md); overflow-x: auto; font-size: 0.78rem; line-height: 1.7; color: var(--fg-muted); margin: 0; white-space: pre; scrollbar-width: thin; scrollbar-color: var(--outline) transparent; }
+.code-block pre .hl-tag  { color: var(--cyan); }
+.code-block pre .hl-attr { color: var(--seed); }
+.code-block pre .hl-val  { color: var(--green); }
+.code-block pre .hl-com  { color: var(--fg-subtle); font-style: italic; }
+</style>
 </head>
 <body>
+
 <header class="section-header">
-  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0</div>
+  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0 / 09</div>
   <h1 class="section-header__title">D 09_DATA_DISPLAY</h1>
-  <p class="section-header__desc">Lists, tables, badges, chips, and notification patterns.</p>
+  <p class="section-header__desc">Lists, tables, badges, progress, log streams, and stat cards.</p>
 </header>
-<div class="demo-box">
-  <div class="demo-box__label">// SECTION_STUB</div>
-  <p style="color:var(--fg-muted);font-size:0.85rem;margin-bottom:var(--sp-md)">
-    This section is queued for implementation. Drop the completed
-    <code>09-data.html</code> into the <code>sections/</code> folder to replace this stub.
-  </p>
-  <div style="border-left:3px solid var(--tonal-40);padding:var(--sp-md);background:color-mix(in srgb,var(--seed) 4%,var(--bg))">
-    <div style="font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">Contents_Planned</div>
-    <p style="font-size:0.82rem;color:var(--fg-muted)">Lists, tables, badges, chips, and notification patterns.</p>
+
+<!-- 09.1 LIST -->
+<section class="subsection" aria-labelledby="list-label">
+  <div id="list-label" class="subsection__label">09.1 — List Items</div>
+
+  <ul class="metui-list" role="list">
+    <li class="metui-list__item metui-list__item--active">
+      <div class="metui-list__leading" aria-hidden="true"></div>
+      <div class="metui-list__content">
+        <div class="metui-list__title">[SYS] INIT_KERNEL_v4.2</div>
+        <div class="metui-list__meta">
+          PID: 1042
+          <span class="metui-list__meta-sep">|</span>
+          OWNER: root
+          <span class="metui-list__meta-sep">|</span>
+          CPU: 0.02%
+        </div>
+      </div>
+      <div class="metui-list__trailing" style="color:var(--green)">RUNNING</div>
+    </li>
+    <li class="metui-list__item">
+      <div class="metui-list__leading" aria-hidden="true"></div>
+      <div class="metui-list__content">
+        <div class="metui-list__title">[USR] DOCS_ARCHIVE.tar.gz</div>
+        <div class="metui-list__meta">
+          SIZE: 1.4GB
+          <span class="metui-list__meta-sep">|</span>
+          MODIFIED: 2026-04-02
+        </div>
+      </div>
+      <div class="metui-list__trailing" style="color:var(--yellow)">COMPRESSED</div>
+    </li>
+    <li class="metui-list__item metui-list__item--danger">
+      <div class="metui-list__leading" aria-hidden="true"></div>
+      <div class="metui-list__content">
+        <div class="metui-list__title">[NET] SSH_SESSION_443</div>
+        <div class="metui-list__meta">
+          HOST: 192.168.1.44
+          <span class="metui-list__meta-sep">|</span>
+          PORT: 22
+        </div>
+      </div>
+      <div class="metui-list__trailing" style="color:var(--red)">[!] BLOCKED</div>
+    </li>
+    <button class="metui-list__item metui-list__item--interactive" role="listitem"
+            onclick="this.classList.toggle('metui-list__item--active')">
+      <div class="metui-list__leading" aria-hidden="true"></div>
+      <div class="metui-list__content">
+        <div class="metui-list__title">[APP] metui_server</div>
+        <div class="metui-list__meta">Click to toggle active state</div>
+      </div>
+      <div class="metui-list__trailing" style="color:var(--cyan)">IDLE</div>
+    </button>
+  </ul>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this,'list')">COPY</button>
+    </div>
+    <pre id="code-list"><span class="hl-tag">&lt;ul</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-list"</span> <span class="hl-attr">role</span>=<span class="hl-val">"list"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-com">&lt;!-- State modifiers: --active --danger --warning --success --&gt;</span>
+  <span class="hl-tag">&lt;li</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-list__item metui-list__item--active"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-list__leading"</span><span class="hl-tag">&gt;&lt;/div&gt;</span>
+    <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-list__content"</span><span class="hl-tag">&gt;</span>
+      <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-list__title"</span><span class="hl-tag">&gt;</span>[SYS] PROCESS_NAME<span class="hl-tag">&lt;/div&gt;</span>
+      <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-list__meta"</span><span class="hl-tag">&gt;</span>
+        KEY: val &lt;span class="metui-list__meta-sep"&gt;|&lt;/span&gt; KEY: val
+      <span class="hl-tag">&lt;/div&gt;</span>
+    <span class="hl-tag">&lt;/div&gt;</span>
+    <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-list__trailing"</span><span class="hl-tag">&gt;</span>STATUS<span class="hl-tag">&lt;/div&gt;</span>
+  <span class="hl-tag">&lt;/li&gt;</span>
+<span class="hl-tag">&lt;/ul&gt;</span></pre>
   </div>
-</div>
+</section>
+
+<!-- 09.2 DATA TABLE -->
+<section class="subsection" aria-labelledby="table-label">
+  <div id="table-label" class="subsection__label">09.2 — Data Table</div>
+
+  <div style="overflow-x:auto">
+    <table class="metui-data-table" aria-label="Process list">
+      <thead>
+        <tr>
+          <th class="metui-data-table__sortable asc" onclick="sortTable(this, 0)" scope="col">PID</th>
+          <th class="metui-data-table__sortable" onclick="sortTable(this, 1)" scope="col">NAME</th>
+          <th scope="col">STATUS</th>
+          <th class="metui-data-table__sortable metui-data-table__num" onclick="sortTable(this, 3)" scope="col">CPU%</th>
+          <th class="metui-data-table__num" scope="col">MEM</th>
+          <th scope="col">OWNER</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr>
+          <td>1042</td>
+          <td style="color:var(--fg);font-weight:700">kernel_sched</td>
+          <td><span class="metui-badge metui-badge--ok">[OK] RUNNING</span></td>
+          <td class="metui-data-table__num">0.02</td>
+          <td class="metui-data-table__num">2.1GB</td>
+          <td>root</td>
+        </tr>
+        <tr>
+          <td>2218</td>
+          <td style="color:var(--fg);font-weight:700">metui_server</td>
+          <td><span class="metui-badge metui-badge--ok">[OK] RUNNING</span></td>
+          <td class="metui-data-table__num">1.40</td>
+          <td class="metui-data-table__num">512MB</td>
+          <td>wyatt</td>
+        </tr>
+        <tr>
+          <td>3301</td>
+          <td style="color:var(--fg);font-weight:700">log_daemon</td>
+          <td><span class="metui-badge metui-badge--idle">IDLE</span></td>
+          <td class="metui-data-table__num">0.00</td>
+          <td class="metui-data-table__num">64MB</td>
+          <td>root</td>
+        </tr>
+        <tr>
+          <td>4410</td>
+          <td style="color:var(--fg);font-weight:700">net_monitor</td>
+          <td><span class="metui-badge metui-badge--warning">[WR] HIGH_MEM</span></td>
+          <td class="metui-data-table__num">0.30</td>
+          <td class="metui-data-table__num">840MB</td>
+          <td>sys</td>
+        </tr>
+        <tr>
+          <td>5502</td>
+          <td style="color:var(--fg);font-weight:700">ssh_blocked</td>
+          <td><span class="metui-badge metui-badge--error">[ER] BLOCKED</span></td>
+          <td class="metui-data-table__num">0.00</td>
+          <td class="metui-data-table__num">4MB</td>
+          <td>anon</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this,'table')">COPY</button>
+    </div>
+    <pre id="code-table"><span class="hl-tag">&lt;table</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-data-table"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;thead&gt;&lt;tr&gt;</span>
+    <span class="hl-com">&lt;!-- Add .metui-data-table__sortable for click-to-sort --&gt;</span>
+    <span class="hl-com">&lt;!-- Add .asc or .desc to show sort arrow --&gt;</span>
+    <span class="hl-tag">&lt;th</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-data-table__sortable asc"</span><span class="hl-tag">&gt;</span>COLUMN<span class="hl-tag">&lt;/th&gt;</span>
+    <span class="hl-com">&lt;!-- Add .metui-data-table__num for right-aligned numbers --&gt;</span>
+    <span class="hl-tag">&lt;th</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-data-table__num"</span><span class="hl-tag">&gt;</span>VALUE<span class="hl-tag">&lt;/th&gt;</span>
+  <span class="hl-tag">&lt;/tr&gt;&lt;/thead&gt;</span>
+  <span class="hl-tag">&lt;tbody&gt;</span>
+    <span class="hl-tag">&lt;tr&gt;</span>
+      <span class="hl-tag">&lt;td&gt;</span>Cell<span class="hl-tag">&lt;/td&gt;</span>
+      <span class="hl-tag">&lt;td</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-data-table__num"</span><span class="hl-tag">&gt;</span>1.40<span class="hl-tag">&lt;/td&gt;</span>
+    <span class="hl-tag">&lt;/tr&gt;</span>
+  <span class="hl-tag">&lt;/tbody&gt;</span>
+<span class="hl-tag">&lt;/table&gt;</span></pre>
+  </div>
+</section>
+
+<!-- 09.3 BADGES -->
+<section class="subsection" aria-labelledby="badge-label">
+  <div id="badge-label" class="subsection__label">09.3 — Badges</div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:var(--sp-md);align-items:center;padding:var(--sp-md) 0">
+    <span class="metui-badge metui-badge--ok">[OK] SUCCESS</span>
+    <span class="metui-badge metui-badge--error">[ER] FAILED</span>
+    <span class="metui-badge metui-badge--warning">[WR] CAUTION</span>
+    <span class="metui-badge metui-badge--info">[II] INFO</span>
+    <span class="metui-badge metui-badge--idle">IDLE</span>
+    <span class="metui-badge metui-badge--seed">PRIMARY</span>
+    <!-- notification dot -->
+    <span class="metui-badge--dot" data-count="99+" style="font-size:0.85rem;color:var(--fg)">[MAIL]</span>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this,'badge')">COPY</button>
+    </div>
+    <pre id="code-badge"><span class="hl-com">&lt;!-- Inline badges --&gt;</span>
+<span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-badge metui-badge--ok"</span><span class="hl-tag">&gt;</span>[OK] SUCCESS<span class="hl-tag">&lt;/span&gt;</span>
+<span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-badge metui-badge--error"</span><span class="hl-tag">&gt;</span>[ER] FAILED<span class="hl-tag">&lt;/span&gt;</span>
+<span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-badge metui-badge--warning"</span><span class="hl-tag">&gt;</span>[WR] CAUTION<span class="hl-tag">&lt;/span&gt;</span>
+<span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-badge metui-badge--info"</span><span class="hl-tag">&gt;</span>[II] INFO<span class="hl-tag">&lt;/span&gt;</span>
+<span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-badge metui-badge--idle"</span><span class="hl-tag">&gt;</span>IDLE<span class="hl-tag">&lt;/span&gt;</span>
+<span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-badge metui-badge--seed"</span><span class="hl-tag">&gt;</span>PRIMARY<span class="hl-tag">&lt;/span&gt;</span>
+
+<span class="hl-com">&lt;!-- Notification dot (CSS ::after, no extra element) --&gt;</span>
+<span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-badge--dot"</span> <span class="hl-attr">data-count</span>=<span class="hl-val">"99+"</span><span class="hl-tag">&gt;</span>[MAIL]<span class="hl-tag">&lt;/span&gt;</span></pre>
+  </div>
+</section>
+
+<!-- 09.4 PROGRESS -->
+<section class="subsection" aria-labelledby="progress-label">
+  <div id="progress-label" class="subsection__label">09.4 — Progress Bar</div>
+
+  <div style="display:flex;flex-direction:column;gap:var(--sp-xl);max-width:540px">
+
+    <div class="metui-progress">
+      <div class="metui-progress__label">
+        <span>DISK_USAGE</span>
+        <span class="metui-progress__value">42%</span>
+      </div>
+      <div class="metui-progress__track" role="progressbar" aria-valuenow="42" aria-valuemin="0" aria-valuemax="100">
+        <div class="metui-progress__fill" style="width:42%"></div>
+      </div>
+    </div>
+
+    <div class="metui-progress metui-progress--warning">
+      <div class="metui-progress__label">
+        <span>MEMORY_USAGE</span>
+        <span class="metui-progress__value" style="color:var(--yellow)">81%</span>
+      </div>
+      <div class="metui-progress__track" role="progressbar" aria-valuenow="81" aria-valuemin="0" aria-valuemax="100">
+        <div class="metui-progress__fill" style="width:81%"></div>
+      </div>
+    </div>
+
+    <div class="metui-progress metui-progress--danger">
+      <div class="metui-progress__label">
+        <span>CPU_THROTTLE</span>
+        <span class="metui-progress__value" style="color:var(--red)">97%</span>
+      </div>
+      <div class="metui-progress__track" role="progressbar" aria-valuenow="97" aria-valuemin="0" aria-valuemax="100">
+        <div class="metui-progress__fill" style="width:97%"></div>
+      </div>
+    </div>
+
+    <div class="metui-progress metui-progress--indeterminate">
+      <div class="metui-progress__label"><span>SYNCING_DATA</span><span class="metui-progress__value">—</span></div>
+      <div class="metui-progress__track" role="progressbar" aria-valuetext="Loading">
+        <div class="metui-progress__fill"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this,'progress')">COPY</button>
+    </div>
+    <pre id="code-progress"><span class="hl-com">&lt;!-- Determinate: --warning / --danger / --success --&gt;</span>
+<span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-progress"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-progress__label"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;span&gt;</span>LABEL<span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-progress__value"</span><span class="hl-tag">&gt;</span>42%<span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;/div&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-progress__track"</span>
+       <span class="hl-attr">role</span>=<span class="hl-val">"progressbar"</span>
+       <span class="hl-attr">aria-valuenow</span>=<span class="hl-val">"42"</span> <span class="hl-attr">aria-valuemin</span>=<span class="hl-val">"0"</span> <span class="hl-attr">aria-valuemax</span>=<span class="hl-val">"100"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-progress__fill"</span> <span class="hl-attr">style</span>=<span class="hl-val">"width:42%"</span><span class="hl-tag">&gt;&lt;/div&gt;</span>
+  <span class="hl-tag">&lt;/div&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span>
+
+<span class="hl-com">&lt;!-- Indeterminate: add .metui-progress--indeterminate --&gt;</span></pre>
+  </div>
+</section>
+
+<!-- 09.5 LOG STREAM -->
+<section class="subsection" aria-labelledby="log-label">
+  <div id="log-label" class="subsection__label">09.5 — Log Stream</div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--sp-sm)">
+    <span style="font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px">// SYSTEM_LOG</span>
+    <button style="background:none;border:1px solid var(--outline);color:var(--fg-subtle);font-family:'JetBrains Mono',monospace;font-size:0.65rem;padding:2px var(--sp-sm);cursor:pointer;text-transform:uppercase"
+            onclick="addLog()">+ ADD_LINE</button>
+  </div>
+
+  <div class="metui-log-stream" id="log-stream" aria-live="polite" aria-label="System log">
+    <div class="metui-log-stream__line">
+      <span class="metui-log-stream__ts">09:14:22</span>
+      <span class="metui-log-stream__lvl log-ok">[OK]</span>
+      <span class="metui-log-stream__msg">boot sequence complete</span>
+    </div>
+    <div class="metui-log-stream__line">
+      <span class="metui-log-stream__ts">09:14:23</span>
+      <span class="metui-log-stream__lvl log-ok">[OK]</span>
+      <span class="metui-log-stream__msg">scheduler initialized — 4 threads</span>
+    </div>
+    <div class="metui-log-stream__line">
+      <span class="metui-log-stream__ts">09:14:25</span>
+      <span class="metui-log-stream__lvl log-info">[II]</span>
+      <span class="metui-log-stream__msg">network interface eth0 UP — 1.2Gb/s</span>
+    </div>
+    <div class="metui-log-stream__line">
+      <span class="metui-log-stream__ts">09:15:01</span>
+      <span class="metui-log-stream__lvl log-warn">[WR]</span>
+      <span class="metui-log-stream__msg">disk usage above 50% on /home</span>
+    </div>
+    <div class="metui-log-stream__line">
+      <span class="metui-log-stream__ts">09:16:44</span>
+      <span class="metui-log-stream__lvl log-err">[ER]</span>
+      <span class="metui-log-stream__msg">auth failure — 3 attempts on port 22 from 192.168.1.101</span>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this,'log')">COPY</button>
+    </div>
+    <pre id="code-log"><span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-log-stream"</span> <span class="hl-attr">aria-live</span>=<span class="hl-val">"polite"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-log-stream__line"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-log-stream__ts"</span><span class="hl-tag">&gt;</span>09:14:22<span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-com">&lt;!-- Level classes: .log-ok .log-warn .log-err .log-info --&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-log-stream__lvl log-ok"</span><span class="hl-tag">&gt;</span>[OK]<span class="hl-tag">&lt;/span&gt;</span>
+    <span class="hl-tag">&lt;span</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-log-stream__msg"</span><span class="hl-tag">&gt;</span>boot complete<span class="hl-tag">&lt;/span&gt;</span>
+  <span class="hl-tag">&lt;/div&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+  </div>
+</section>
+
+<!-- 09.6 STAT CARDS -->
+<section class="subsection" aria-labelledby="stat-label">
+  <div id="stat-label" class="subsection__label">09.6 — Stat Cards</div>
+
+  <div class="metui-stat-grid">
+    <div class="metui-stat-card">
+      <div class="metui-stat-card__label">CPU_LOAD</div>
+      <div class="metui-stat-card__value">0.72</div>
+      <div class="metui-stat-card__sub">avg over 5min</div>
+      <div class="metui-stat-card__delta metui-stat-card__delta--down">▼ -0.14 from peak</div>
+    </div>
+    <div class="metui-stat-card">
+      <div class="metui-stat-card__label">MEM_USED</div>
+      <div class="metui-stat-card__value">6.2<span style="font-size:1rem">GB</span></div>
+      <div class="metui-stat-card__sub">of 16GB total</div>
+      <div class="metui-stat-card__delta metui-stat-card__delta--up">▲ +820MB</div>
+    </div>
+    <div class="metui-stat-card">
+      <div class="metui-stat-card__label">UPTIME</div>
+      <div class="metui-stat-card__value">14<span style="font-size:1rem">d</span></div>
+      <div class="metui-stat-card__sub">since last reboot</div>
+      <div class="metui-stat-card__delta metui-stat-card__delta--flat">— no change</div>
+    </div>
+    <div class="metui-stat-card">
+      <div class="metui-stat-card__label">ERRORS_24H</div>
+      <div class="metui-stat-card__value" style="color:var(--red)">3</div>
+      <div class="metui-stat-card__sub">auth failures</div>
+      <div class="metui-stat-card__delta metui-stat-card__delta--up" style="color:var(--red)">▲ +3 today</div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">HTML</span>
+      <button class="code-block__copy" onclick="copyCode(this,'stat')">COPY</button>
+    </div>
+    <pre id="code-stat"><span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-stat-grid"</span><span class="hl-tag">&gt;</span>
+  <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-stat-card"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-stat-card__label"</span><span class="hl-tag">&gt;</span>METRIC_NAME<span class="hl-tag">&lt;/div&gt;</span>
+    <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-stat-card__value"</span><span class="hl-tag">&gt;</span>0.72<span class="hl-tag">&lt;/div&gt;</span>
+    <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-stat-card__sub"</span><span class="hl-tag">&gt;</span>subtitle text<span class="hl-tag">&lt;/div&gt;</span>
+    <span class="hl-com">&lt;!-- delta classes: --up --down --flat --&gt;</span>
+    <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-val">"metui-stat-card__delta metui-stat-card__delta--up"</span><span class="hl-tag">&gt;</span>▲ +0.14<span class="hl-tag">&lt;/div&gt;</span>
+  <span class="hl-tag">&lt;/div&gt;</span>
+<span class="hl-tag">&lt;/div&gt;</span></pre>
+  </div>
+</section>
+
 <script>
+/* Sort table by column */
+function sortTable(th, colIdx) {
+  const table = th.closest('table');
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const asc = !th.classList.contains('asc');
+
+  table.querySelectorAll('.metui-data-table__sortable').forEach(h => h.classList.remove('asc','desc'));
+  th.classList.add(asc ? 'asc' : 'desc');
+
+  rows.sort((a,b) => {
+    const av = a.cells[colIdx]?.innerText.trim() || '';
+    const bv = b.cells[colIdx]?.innerText.trim() || '';
+    const an = parseFloat(av), bn = parseFloat(bv);
+    if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+    return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+/* Log stream: add random line */
+const logMessages = [
+  ['[OK]', 'log-ok', 'checkpoint written to /var/log/metui.log'],
+  ['[II]', 'log-info', 'new connection from 10.0.0.42'],
+  ['[WR]', 'log-warn', 'swap usage above 60%'],
+  ['[ER]', 'log-err', 'failed to bind socket on port 443'],
+  ['[OK]', 'log-ok', 'backup completed — 1.4GB archived'],
+  ['[II]', 'log-info', 'config reloaded — 0 errors'],
+];
+function addLog() {
+  const stream = document.getElementById('log-stream');
+  const [lvl, cls, msg] = logMessages[Math.floor(Math.random() * logMessages.length)];
+  const now = new Date();
+  const ts = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const line = document.createElement('div');
+  line.className = 'metui-log-stream__line';
+  line.innerHTML = `
+    <span class="metui-log-stream__ts">${ts}</span>
+    <span class="metui-log-stream__lvl ${cls}">${lvl}</span>
+    <span class="metui-log-stream__msg">${msg}</span>`;
+  stream.appendChild(line);
+  stream.scrollTop = stream.scrollHeight;
+}
+
+function copyCode(btn, id) {
+  const pre = document.getElementById('code-' + id);
+  if (!pre) return;
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'COPIED'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
 window.addEventListener('message', e => {
   if (e.data?.type !== 'METUI_THEME') return;
   const root = document.documentElement;
