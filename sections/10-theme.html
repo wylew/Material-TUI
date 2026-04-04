@@ -6,30 +6,463 @@
 <title>METUI | 10_THEME_ADVANCED</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="metui-base.css">
+<style>
+
+/* ============================================================
+   10_THEME_ADVANCED
+   Demonstrates: seed engine, presets, dark/light, custom palette
+   ============================================================ */
+
+/* Theme preview card — uses live CSS vars so it reacts to changes */
+.theme-preview {
+  border: 2px solid var(--outline);
+  overflow: hidden;
+}
+.theme-preview__bar {
+  background: var(--surface);
+  border-bottom: 2px solid var(--outline);
+  padding: var(--sp-sm) var(--sp-md);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  font-size: 0.72rem;
+  color: var(--seed);
+  font-weight: 700;
+}
+.theme-preview__dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--seed);
+  flex-shrink: 0;
+}
+.theme-preview__body {
+  padding: var(--sp-lg);
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+.theme-preview__row {
+  display: flex;
+  gap: var(--sp-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.theme-preview__btn-f {
+  background: var(--seed); color: var(--bg);
+  padding: var(--sp-xs) var(--sp-md); font-size: 0.72rem; font-weight: 700;
+  border: none; cursor: default; text-transform: uppercase;
+}
+.theme-preview__btn-o {
+  border: 1px solid var(--seed); color: var(--seed);
+  padding: var(--sp-xs) var(--sp-md); font-size: 0.72rem; font-weight: 700;
+  background: transparent; cursor: default; text-transform: uppercase;
+}
+.theme-preview__badge-ok  { color: var(--green);  border: 1px solid var(--green);  padding: 1px 6px; font-size: 0.65rem; font-weight: 700; }
+.theme-preview__badge-err { color: var(--red);    border: 1px solid var(--red);    padding: 1px 6px; font-size: 0.65rem; font-weight: 700; }
+.theme-preview__badge-wrn { color: var(--yellow); border: 1px solid var(--yellow); padding: 1px 6px; font-size: 0.65rem; font-weight: 700; }
+.theme-preview__input {
+  border: 1px solid var(--seed); background: color-mix(in srgb, var(--seed) 4%, var(--bg));
+  color: var(--fg); padding: var(--sp-xs) var(--sp-sm); font-size: 0.72rem;
+  font-family: 'JetBrains Mono', monospace; width: 140px;
+}
+
+/* Tonal strip */
+.tonal-strip {
+  display: flex;
+  height: 40px;
+  border: 1px solid var(--outline);
+  overflow: hidden;
+}
+.tonal-strip__swatch {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.58rem;
+  font-weight: 700;
+  transition: flex var(--dur-std);
+  cursor: default;
+}
+.tonal-strip__swatch:hover { flex: 2; }
+
+/* Preset grid */
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+  gap: var(--sp-md);
+}
+.preset-card {
+  border: 2px solid var(--outline);
+  padding: var(--sp-md);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-tui);
+  background: var(--surface);
+}
+.preset-card:hover { border-color: var(--seed); }
+.preset-card:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
+.preset-card.active { border-color: var(--seed); background: var(--tonal-10); }
+.preset-card__swatches { display: flex; gap: 3px; margin-bottom: var(--sp-sm); }
+.preset-card__swatch { width: 20px; height: 20px; border: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+.preset-card__name { font-size: 0.75rem; font-weight: 700; color: var(--fg); margin-bottom: 2px; }
+.preset-card__desc { font-size: 0.65rem; color: var(--fg-subtle); }
+
+/* Custom seed section */
+.seed-builder {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-md);
+}
+.seed-builder__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-md);
+  flex-wrap: wrap;
+}
+.seed-builder__picker {
+  width: 48px; height: 48px;
+  border: 2px solid var(--outline);
+  background: none;
+  cursor: pointer;
+  padding: 3px;
+}
+.seed-builder__hex {
+  border: 1px solid var(--outline);
+  background: var(--surface);
+  color: var(--fg);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  padding: 0 var(--sp-md);
+  height: 48px;
+  width: 130px;
+  outline: none;
+  text-transform: uppercase;
+}
+.seed-builder__hex:focus { border-color: var(--seed); }
+.seed-builder__apply {
+  height: 48px; padding: 0 var(--sp-lg);
+  background: var(--seed); color: var(--bg);
+  border: none; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem; font-weight: 700; text-transform: uppercase;
+  cursor: pointer; letter-spacing: 1px;
+  transition: background var(--dur-fast);
+}
+.seed-builder__apply:hover { background: var(--tonal-80); }
+.seed-builder__apply:focus-visible { outline: 2px solid var(--seed); outline-offset: 2px; }
+
+/* Contrast checker */
+.contrast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--sp-md);
+}
+.contrast-pair {
+  border: 1px solid var(--outline);
+  overflow: hidden;
+}
+.contrast-pair__swatch {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.contrast-pair__ratio {
+  padding: var(--sp-xs) var(--sp-sm);
+  font-size: 0.65rem;
+  background: var(--surface-2);
+  color: var(--fg-subtle);
+  text-align: center;
+}
+.contrast-pair__ratio.pass { color: var(--green); }
+.contrast-pair__ratio.fail { color: var(--red); }
+
+/* CODE BLOCK */
+.code-block { position: relative; background: var(--surface); border: 1px solid var(--surface-2); border-left: 3px solid var(--tonal-40); margin-top: var(--sp-md); }
+.code-block__header { display: flex; align-items: center; justify-content: space-between; padding: var(--sp-xs) var(--sp-md); border-bottom: 1px solid var(--surface-2); background: var(--surface-2); }
+.code-block__lang { font-size: 0.6rem; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: 2px; }
+.code-block__copy { background: none; border: 1px solid var(--outline); color: var(--fg-subtle); font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; padding: 2px var(--sp-sm); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: color var(--dur-fast), border-color var(--dur-fast); }
+.code-block__copy:hover { color: var(--seed); border-color: var(--seed); }
+.code-block__copy.copied { color: var(--green); border-color: var(--green); }
+.code-block pre { padding: var(--sp-md); overflow-x: auto; font-size: 0.78rem; line-height: 1.7; color: var(--fg-muted); margin: 0; white-space: pre; scrollbar-width: thin; scrollbar-color: var(--outline) transparent; }
+.code-block pre .hl-tag  { color: var(--cyan); }
+.code-block pre .hl-attr { color: var(--seed); }
+.code-block pre .hl-val  { color: var(--green); }
+.code-block pre .hl-com  { color: var(--fg-subtle); font-style: italic; }
+.code-block pre .hl-prop { color: var(--seed); }
+.code-block pre .hl-num  { color: var(--cyan); }
+</style>
 </head>
 <body>
+
 <header class="section-header">
-  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0</div>
+  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0 / 10</div>
   <h1 class="section-header__title">% 10_THEME_ADVANCED</h1>
-  <p class="section-header__desc">Advanced theming, seed engine, tonal palette, and presets.</p>
+  <p class="section-header__desc">Seed engine, tonal palette, presets, and custom theme builder. Changes propagate to the shell.</p>
 </header>
-<div class="demo-box">
-  <div class="demo-box__label">// SECTION_STUB</div>
-  <p style="color:var(--fg-muted);font-size:0.85rem;margin-bottom:var(--sp-md)">
-    This section is queued for implementation. Drop the completed
-    <code>10-theme.html</code> into the <code>sections/</code> folder to replace this stub.
-  </p>
-  <div style="border-left:3px solid var(--tonal-40);padding:var(--sp-md);background:color-mix(in srgb,var(--seed) 4%,var(--bg))">
-    <div style="font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">Contents_Planned</div>
-    <p style="font-size:0.82rem;color:var(--fg-muted)">Advanced theming, seed engine, tonal palette, and presets.</p>
+
+<!-- 10.1 LIVE PREVIEW -->
+<section class="subsection" aria-labelledby="preview-label">
+  <div id="preview-label" class="subsection__label">10.1 — Live Theme Preview</div>
+
+  <div class="grid grid--2col">
+    <div class="theme-preview">
+      <div class="theme-preview__bar">
+        <div class="theme-preview__dot"></div>
+        METUI_SYSTEM_v2.0
+      </div>
+      <div class="theme-preview__body">
+        <div class="theme-preview__row">
+          <span class="theme-preview__btn-f">EXECUTE</span>
+          <span class="theme-preview__btn-o">CANCEL</span>
+        </div>
+        <div class="theme-preview__row">
+          <span class="theme-preview__badge-ok">[OK]</span>
+          <span class="theme-preview__badge-err">[ER]</span>
+          <span class="theme-preview__badge-wrn">[WR]</span>
+        </div>
+        <input class="theme-preview__input" value="active_input_" readonly>
+        <div style="height:6px;background:var(--surface-2);border:1px solid var(--outline)">
+          <div style="width:60%;height:100%;background:var(--seed)"></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="margin-bottom:var(--sp-sm);font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px">Tonal Palette (hover to expand)</div>
+      <div class="tonal-strip" aria-label="Live tonal palette">
+        <div class="tonal-strip__swatch" style="background:var(--tonal-100);color:var(--bg)">T-100</div>
+        <div class="tonal-strip__swatch" style="background:var(--tonal-80);color:var(--bg)">T-80</div>
+        <div class="tonal-strip__swatch" style="background:var(--tonal-60)">T-60</div>
+        <div class="tonal-strip__swatch" style="background:var(--tonal-40)">T-40</div>
+        <div class="tonal-strip__swatch" style="background:var(--tonal-20)">T-20</div>
+        <div class="tonal-strip__swatch" style="background:var(--tonal-10)">T-10</div>
+        <div class="tonal-strip__swatch" style="background:var(--bg);border-left:1px solid var(--outline)">T-0</div>
+      </div>
+      <div style="margin-top:var(--sp-md);font-size:0.72rem;color:var(--fg-muted);line-height:1.7">
+        All tonal steps derive from <code>--seed</code> via <code>color-mix(in srgb, var(--seed) N%, var(--bg))</code>. Change the seed below — every token updates automatically.
+      </div>
+    </div>
   </div>
-</div>
+</section>
+
+<!-- 10.2 PRESETS -->
+<section class="subsection" aria-labelledby="preset-label">
+  <div id="preset-label" class="subsection__label">10.2 — Presets</div>
+
+  <div class="preset-grid" id="preset-grid">
+    <!-- Generated by JS -->
+  </div>
+</section>
+
+<!-- 10.3 CUSTOM SEED BUILDER -->
+<section class="subsection" aria-labelledby="builder-label">
+  <div id="builder-label" class="subsection__label">10.3 — Custom Seed Builder</div>
+
+  <div class="seed-builder">
+    <div class="seed-builder__row">
+      <input type="color" class="seed-builder__picker" id="custom-picker" value="#cba6f7"
+             oninput="syncHex(this.value)" aria-label="Pick seed color">
+      <input type="text" class="seed-builder__hex" id="custom-hex" value="#CBA6F7"
+             maxlength="7" placeholder="#RRGGBB" aria-label="Hex seed color"
+             oninput="syncPicker(this.value)">
+      <button class="seed-builder__apply" onclick="applyCustom()">APPLY_SEED</button>
+    </div>
+    <div style="font-size:0.72rem;color:var(--fg-muted)">
+      Enter any hex value and click APPLY_SEED to re-theme the entire library. The change also propagates to the shell via postMessage.
+    </div>
+  </div>
+</section>
+
+<!-- 10.4 SURFACE PALETTE -->
+<section class="subsection" aria-labelledby="surface-label">
+  <div id="surface-label" class="subsection__label">10.4 — Surface Palette</div>
+
+  <div style="display:flex;gap:var(--sp-md);flex-wrap:wrap">
+    <div style="flex:1;min-width:120px;border:1px solid var(--outline)">
+      <div style="height:40px;background:var(--bg)"></div>
+      <div style="padding:var(--sp-xs) var(--sp-sm);font-size:0.65rem;color:var(--fg-subtle)">--bg<br>#1e1e2e</div>
+    </div>
+    <div style="flex:1;min-width:120px;border:1px solid var(--outline)">
+      <div style="height:40px;background:var(--surface)"></div>
+      <div style="padding:var(--sp-xs) var(--sp-sm);font-size:0.65rem;color:var(--fg-subtle)">--surface<br>#181825</div>
+    </div>
+    <div style="flex:1;min-width:120px;border:1px solid var(--outline)">
+      <div style="height:40px;background:var(--surface-2)"></div>
+      <div style="padding:var(--sp-xs) var(--sp-sm);font-size:0.65rem;color:var(--fg-subtle)">--surface-2<br>#313244</div>
+    </div>
+    <div style="flex:1;min-width:120px;border:1px solid var(--outline)">
+      <div style="height:40px;background:var(--outline)"></div>
+      <div style="padding:var(--sp-xs) var(--sp-sm);font-size:0.65rem;color:var(--fg-subtle)">--outline<br>#585b70</div>
+    </div>
+  </div>
+  <div style="margin-top:var(--sp-sm);font-size:0.72rem;color:var(--fg-muted)">
+    Surface tokens are fixed — they define the dark background system and don't change with the seed. Override them to support light mode or alternative surfaces.
+  </div>
+</section>
+
+<!-- 10.5 HOW TO THEME -->
+<section class="subsection" aria-labelledby="howto-label">
+  <div id="howto-label" class="subsection__label">10.5 — How to Theme</div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">CSS — minimum override</span>
+      <button class="code-block__copy" onclick="copyCode(this,'theme-css')">COPY</button>
+    </div>
+    <pre id="code-theme-css"><span class="hl-com">/* 1. Change just the seed — all tonal levels follow automatically */</span>
+<span class="hl-tag">:root</span> {
+  <span class="hl-prop">--seed</span>: <span class="hl-num">#89b4fa</span>;  <span class="hl-com">/* Blue — replaces purple throughout */</span>
+}
+
+<span class="hl-com">/* 2. Override specific surface tokens for a lighter bg */</span>
+<span class="hl-tag">:root</span> {
+  <span class="hl-prop">--bg</span>:        <span class="hl-num">#eff1f5</span>;  <span class="hl-com">/* Catppuccin Latte base */</span>
+  <span class="hl-prop">--surface</span>:   <span class="hl-num">#e6e9ef</span>;
+  <span class="hl-prop">--surface-2</span>: <span class="hl-num">#ccd0da</span>;
+  <span class="hl-prop">--outline</span>:   <span class="hl-num">#9ca0b0</span>;
+  <span class="hl-prop">--fg</span>:        <span class="hl-num">#4c4f69</span>;
+  <span class="hl-prop">--fg-muted</span>:  <span class="hl-num">#6c6f85</span>;
+  <span class="hl-prop">--fg-subtle</span>: <span class="hl-num">#9ca0b0</span>;
+}
+
+<span class="hl-com">/* 3. Full preset object (used by JS setTheme()) */</span>
+const themes = {
+  mocha: {
+    '--seed': '#cba6f7', '--bg': '#1e1e2e',
+    '--surface': '#181825', '--surface-2': '#313244',
+    '--fg': '#cdd6f4', '--fg-muted': '#a6adc8',
+    '--green': '#a6e3a1', '--red': '#f38ba8',
+    '--yellow': '#f9e2af', '--cyan': '#89dceb',
+  },
+  dracula: {
+    '--seed': '#bd93f9', '--bg': '#282a36',
+    '--surface': '#1e1f29', '--surface-2': '#44475a',
+    '--fg': '#f8f8f2', '--fg-muted': '#bfbfbf',
+    '--green': '#50fa7b', '--red': '#ff5555',
+    '--yellow': '#f1fa8c', '--cyan': '#8be9fd',
+  },
+};</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">JavaScript — setTheme()</span>
+      <button class="code-block__copy" onclick="copyCode(this,'theme-js')">COPY</button>
+    </div>
+    <pre id="code-theme-js">function setTheme(name) {
+  const theme = themes[name];
+  if (!theme) return;
+  const root = document.documentElement;
+  Object.entries(theme).forEach(([k, v]) => root.style.setProperty(k, v));
+}
+
+<span class="hl-com">// Or just the seed — tonal levels compute from it automatically:</span>
+function setSeed(hex) {
+  document.documentElement.style.setProperty('--seed', hex);
+}</pre>
+  </div>
+</section>
+
 <script>
+const PRESETS = [
+  { name: 'Catppuccin Mocha', seed: '#cba6f7', bg: '#1e1e2e', surface: '#181825', s2: '#313244', fg: '#cdd6f4', green: '#a6e3a1', red: '#f38ba8', yellow: '#f9e2af', cyan: '#89dceb' },
+  { name: 'Dracula',          seed: '#bd93f9', bg: '#282a36', surface: '#1e1f29', s2: '#44475a', fg: '#f8f8f2', green: '#50fa7b', red: '#ff5555', yellow: '#f1fa8c', cyan: '#8be9fd' },
+  { name: 'Nord',             seed: '#88c0d0', bg: '#2e3440', surface: '#292e3a', s2: '#3b4252', fg: '#eceff4', green: '#a3be8c', red: '#bf616a', yellow: '#ebcb8b', cyan: '#80deea' },
+  { name: 'Gruvbox',          seed: '#d3869b', bg: '#282828', surface: '#1d2021', s2: '#3c3836', fg: '#ebdbb2', green: '#b8bb26', red: '#cc241d', yellow: '#d79921', cyan: '#689d6a' },
+  { name: 'Tokyo Night',      seed: '#7aa2f7', bg: '#1a1b26', surface: '#16161e', s2: '#2a2b3d', fg: '#c0caf5', green: '#9ece6a', red: '#f7768e', yellow: '#e0af68', cyan: '#7dcfff' },
+  { name: 'Midnight Blue',    seed: '#89b4fa', bg: '#0f0f1a', surface: '#0a0a14', s2: '#1a1a2e', fg: '#cdd6f4', green: '#a6e3a1', red: '#f38ba8', yellow: '#f9e2af', cyan: '#89dceb' },
+];
+
+let activePreset = 0;
+
+function buildPresets() {
+  const grid = document.getElementById('preset-grid');
+  grid.innerHTML = '';
+  PRESETS.forEach((p, i) => {
+    const card = document.createElement('button');
+    card.className = 'preset-card' + (i === activePreset ? ' active' : '');
+    card.setAttribute('aria-pressed', i === activePreset ? 'true' : 'false');
+    card.innerHTML = `
+      <div class="preset-card__swatches">
+        <div class="preset-card__swatch" style="background:${p.seed}"></div>
+        <div class="preset-card__swatch" style="background:${p.green}"></div>
+        <div class="preset-card__swatch" style="background:${p.red}"></div>
+        <div class="preset-card__swatch" style="background:${p.cyan}"></div>
+        <div class="preset-card__swatch" style="background:${p.yellow}"></div>
+        <div class="preset-card__swatch" style="background:${p.fg}"></div>
+      </div>
+      <div class="preset-card__name">${p.name}</div>
+      <div class="preset-card__desc">${p.seed}</div>`;
+    card.onclick = () => applyPreset(i);
+    grid.appendChild(card);
+  });
+}
+
+function applyPreset(i) {
+  activePreset = i;
+  const p = PRESETS[i];
+  const root = document.documentElement;
+  const map = {
+    '--seed': p.seed, '--bg': p.bg, '--surface': p.surface,
+    '--surface-2': p.s2, '--fg': p.fg,
+    '--green': p.green, '--red': p.red, '--yellow': p.yellow, '--cyan': p.cyan,
+  };
+  Object.entries(map).forEach(([k,v]) => root.style.setProperty(k, v));
+  document.getElementById('custom-picker').value = p.seed;
+  document.getElementById('custom-hex').value = p.seed.toUpperCase();
+  buildPresets();
+  broadcastTheme();
+}
+
+function syncHex(val) {
+  document.getElementById('custom-hex').value = val.toUpperCase();
+}
+function syncPicker(val) {
+  if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+    document.getElementById('custom-picker').value = val;
+  }
+}
+function applyCustom() {
+  const hex = document.getElementById('custom-hex').value.trim();
+  if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return;
+  document.documentElement.style.setProperty('--seed', hex);
+  document.getElementById('custom-picker').value = hex;
+  activePreset = -1;
+  buildPresets();
+  broadcastTheme();
+}
+
+function broadcastTheme() {
+  try {
+    const style = getComputedStyle(document.documentElement);
+    const vars = ['--seed','--tonal-100','--tonal-80','--tonal-60','--tonal-40','--tonal-20','--tonal-10',
+      '--bg','--surface','--surface-2','--outline','--fg','--fg-muted','--fg-subtle',
+      '--green','--red','--yellow','--cyan'];
+    const theme = {};
+    vars.forEach(v => { theme[v] = style.getPropertyValue(v).trim(); });
+    window.parent.postMessage({ type: 'METUI_THEME', theme }, '*');
+  } catch(e) {}
+}
+
+function copyCode(btn, id) {
+  const pre = document.getElementById('code-' + id);
+  if (!pre) return;
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'COPIED'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
 window.addEventListener('message', e => {
   if (e.data?.type !== 'METUI_THEME') return;
   const root = document.documentElement;
   Object.entries(e.data.theme).forEach(([k,v]) => root.style.setProperty(k, v));
+  document.getElementById('custom-picker').value = getComputedStyle(root).getPropertyValue('--seed').trim();
 });
+
+buildPresets();
 </script>
 </body>
 </html>
