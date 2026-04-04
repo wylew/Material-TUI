@@ -6,25 +6,473 @@
 <title>METUI | 11_BEST_PRACTICES</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="metui-base.css">
+<style>
+
+/* ============================================================
+   11_BEST_PRACTICES
+   ============================================================ */
+
+/* Rule card */
+.rule-card {
+  border: 1px solid var(--outline);
+  padding: var(--sp-lg);
+  background: var(--surface);
+  display: flex;
+  gap: var(--sp-lg);
+  align-items: flex-start;
+}
+.rule-card__glyph {
+  font-size: 1.4rem;
+  color: var(--seed);
+  flex-shrink: 0;
+  width: 36px;
+  text-align: center;
+  line-height: 1;
+  padding-top: 2px;
+}
+.rule-card__title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: var(--sp-xs);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.rule-card__body {
+  font-size: 0.82rem;
+  color: var(--fg-muted);
+  line-height: 1.7;
+}
+
+/* Do/Don't comparison */
+.compare-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: var(--sp-md);
+}
+.compare-card {
+  border: 2px solid;
+  padding: var(--sp-md);
+}
+.compare-card--do   { border-color: var(--green); }
+.compare-card--dont { border-color: var(--red); }
+.compare-card__label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: var(--sp-md);
+}
+.compare-card--do   .compare-card__label { color: var(--green); }
+.compare-card--dont .compare-card__label { color: var(--red); }
+.compare-card__content {
+  font-size: 0.82rem;
+  color: var(--fg-muted);
+  line-height: 1.7;
+}
+
+/* Density demo */
+.density-block {
+  border: 1px solid var(--outline);
+  overflow: hidden;
+}
+.density-block__header {
+  background: var(--surface-2);
+  padding: var(--sp-xs) var(--sp-md);
+  font-size: 0.62rem;
+  color: var(--fg-subtle);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  border-bottom: 1px solid var(--outline);
+}
+.density-block__body { background: var(--surface); }
+
+/* Motion demo */
+.motion-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-lg);
+  padding: var(--sp-sm) 0;
+  border-bottom: 1px solid var(--surface-2);
+  min-height: var(--touch-target);
+}
+.motion-row:last-child { border-bottom: none; }
+.motion-bar {
+  height: 4px;
+  background: var(--seed);
+  width: 0;
+  transition-property: width;
+}
+.motion-row:hover .motion-bar { width: 100px; }
+.motion-bar--fast   { transition-duration: var(--dur-fast);  transition-timing-function: var(--ease-tui); }
+.motion-bar--std    { transition-duration: var(--dur-std);   transition-timing-function: var(--ease-tui); }
+.motion-bar--smooth { transition-duration: 300ms;            transition-timing-function: var(--ease-smooth); }
+.motion-bar--never  { display: none; }
+.motion-label { font-size: 0.78rem; color: var(--fg); min-width: 160px; }
+.motion-rule  { font-size: 0.72rem; color: var(--fg-subtle); flex: 1; }
+
+/* A11y checklist */
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.checklist__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-md);
+  padding: var(--sp-sm) var(--sp-md);
+  border-bottom: 1px solid var(--surface-2);
+  min-height: var(--touch-target);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-tui);
+}
+.checklist__item:last-child { border-bottom: none; }
+.checklist__item:hover { background: var(--surface-2); }
+.checklist__box {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--outline);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: transparent;
+  margin-top: 1px;
+}
+.checklist__item.done .checklist__box {
+  border-color: var(--green);
+  color: var(--green);
+}
+.checklist__item.done .checklist__box::before { content: "X"; }
+.checklist__text { font-size: 0.82rem; color: var(--fg-muted); line-height: 1.6; }
+.checklist__item.done .checklist__text { color: var(--fg-subtle); text-decoration: line-through; }
+
+/* CODE BLOCK */
+.code-block { position: relative; background: var(--surface); border: 1px solid var(--surface-2); border-left: 3px solid var(--tonal-40); margin-top: var(--sp-md); }
+.code-block__header { display: flex; align-items: center; justify-content: space-between; padding: var(--sp-xs) var(--sp-md); border-bottom: 1px solid var(--surface-2); background: var(--surface-2); }
+.code-block__lang { font-size: 0.6rem; color: var(--fg-subtle); text-transform: uppercase; letter-spacing: 2px; }
+.code-block__copy { background: none; border: 1px solid var(--outline); color: var(--fg-subtle); font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; padding: 2px var(--sp-sm); cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: color var(--dur-fast), border-color var(--dur-fast); }
+.code-block__copy:hover { color: var(--seed); border-color: var(--seed); }
+.code-block__copy.copied { color: var(--green); border-color: var(--green); }
+.code-block pre { padding: var(--sp-md); overflow-x: auto; font-size: 0.78rem; line-height: 1.7; color: var(--fg-muted); margin: 0; white-space: pre; scrollbar-width: thin; scrollbar-color: var(--outline) transparent; }
+.code-block pre .hl-tag  { color: var(--cyan); }
+.code-block pre .hl-attr { color: var(--seed); }
+.code-block pre .hl-val  { color: var(--green); }
+.code-block pre .hl-com  { color: var(--fg-subtle); font-style: italic; }
+</style>
 </head>
 <body>
+
 <header class="section-header">
-  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0</div>
+  <div class="section-header__eyebrow">METUI_SYSTEM_v2.0 / 11</div>
   <h1 class="section-header__title">? 11_BEST_PRACTICES</h1>
-  <p class="section-header__desc">Information density, the rule of one, accessibility, and motion.</p>
+  <p class="section-header__desc">Information density, semantic intent, accessibility, motion rules, and composition guidelines.</p>
 </header>
-<div class="demo-box">
-  <div class="demo-box__label">// SECTION_STUB</div>
-  <p style="color:var(--fg-muted);font-size:0.85rem;margin-bottom:var(--sp-md)">
-    This section is queued for implementation. Drop the completed
-    <code>11-best-practices.html</code> into the <code>sections/</code> folder to replace this stub.
-  </p>
-  <div style="border-left:3px solid var(--tonal-40);padding:var(--sp-md);background:color-mix(in srgb,var(--seed) 4%,var(--bg))">
-    <div style="font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px;margin-bottom:var(--sp-sm)">Contents_Planned</div>
-    <p style="font-size:0.82rem;color:var(--fg-muted)">Information density, the rule of one, accessibility, and motion.</p>
+
+<!-- 11.1 CORE PRINCIPLES -->
+<section class="subsection" aria-labelledby="principles-label">
+  <div id="principles-label" class="subsection__label">11.1 — Core Principles</div>
+
+  <div style="display:flex;flex-direction:column;gap:var(--sp-md)">
+
+    <div class="rule-card">
+      <div class="rule-card__glyph">#</div>
+      <div>
+        <div class="rule-card__title">SEMANTIC_HTML_FIRST</div>
+        <div class="rule-card__body">Use the right element for the job. Buttons are <code>&lt;button&gt;</code>, not <code>&lt;div onclick&gt;</code>. Dialogs are <code>&lt;dialog&gt;</code>. Nav is <code>&lt;nav&gt;</code>. This gives you keyboard interaction, focus management, and screen reader support for free.</div>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-card__glyph">$</div>
+      <div>
+        <div class="rule-card__title">CLASS_API_ONLY</div>
+        <div class="rule-card__body">Never add inline styles in consumer code. All variation lives in modifier classes — <code>.metui-btn--danger</code>, <code>.metui-card--elevated</code>. This makes theming, overrides, and maintenance predictable.</div>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-card__glyph">!</div>
+      <div>
+        <div class="rule-card__title">ONE_SEED_COLOR</div>
+        <div class="rule-card__body">The entire tonal palette derives from a single <code>--seed</code> token via <code>color-mix()</code>. Never hardcode accent colors. If a color feels wrong, change the seed — not individual rules.</div>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-card__glyph">^</div>
+      <div>
+        <div class="rule-card__title">NEVER_COLOR_ALONE</div>
+        <div class="rule-card__body">Never rely solely on color to convey state. Always pair with a textual indicator: <code style="color:var(--green)">[OK]</code>, <code style="color:var(--red)">[ER]</code>, <code style="color:var(--yellow)">[WR]</code>. This satisfies WCAG 1.4.1 and makes logs readable in monochrome.</div>
+      </div>
+    </div>
+
   </div>
-</div>
+</section>
+
+<!-- 11.2 INFORMATION DENSITY -->
+<section class="subsection" aria-labelledby="density-label">
+  <div id="density-label" class="subsection__label">11.2 — Information Density</div>
+
+  <div class="grid">
+
+    <div class="density-block">
+      <div class="density-block__header">RELAXED — 3-4 rows spacing</div>
+      <div class="density-block__body" style="padding:var(--sp-xl)">
+        <div style="font-size:1.4rem;font-weight:700;color:var(--seed);text-transform:uppercase;margin-bottom:var(--sp-lg)">SYSTEM_INIT</div>
+        <div style="font-size:0.85rem;color:var(--fg-muted);line-height:1.8;max-width:300px">Onboarding, hero headers, branding contexts. Generous whitespace reduces cognitive load on first encounter.</div>
+      </div>
+    </div>
+
+    <div class="density-block">
+      <div class="density-block__header">STANDARD — 1-2 rows spacing</div>
+      <div class="density-block__body" style="padding:var(--sp-md)">
+        <div style="font-size:0.88rem;font-weight:700;color:var(--fg);margin-bottom:var(--sp-sm)">General documentation and navigation items. The default density for most UI surfaces.</div>
+        <div style="font-size:0.78rem;color:var(--fg-subtle)">Use <code>.metui-body-lg</code> / <code>.metui-body-sm</code></div>
+      </div>
+    </div>
+
+    <div class="density-block">
+      <div class="density-block__header">COMPACT — 0 rows spacing</div>
+      <div class="density-block__body" style="padding:var(--sp-sm) var(--sp-md)">
+        <div style="font-size:0.75rem;color:var(--fg-muted);line-height:1.4">
+          <span style="color:var(--seed)">PID   NAME          CPU    MEM</span><br>
+          1042  kernel_sched  0.02%  2.1GB<br>
+          2218  metui_server  1.4%   512MB<br>
+          3301  log_daemon    0.00%  64MB
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <table class="spec-table" style="margin-top:var(--sp-md)">
+    <thead><tr><th>Level</th><th>Spacing</th><th>Use Case</th></tr></thead>
+    <tbody>
+      <tr><td>Relaxed</td><td><code>--sp-xl</code> (32px)</td><td>Onboarding, heroes, branding sections</td></tr>
+      <tr><td>Standard</td><td><code>--sp-md</code> (16px)</td><td>Documentation, navigation, card content</td></tr>
+      <tr><td>Compact</td><td><code>--sp-xs</code> (4px)</td><td>Data tables, log streams, process monitors</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 11.3 RULE OF ONE -->
+<section class="subsection" aria-labelledby="one-label">
+  <div id="one-label" class="subsection__label">11.3 — The Rule of One</div>
+
+  <div class="compare-grid">
+
+    <div class="compare-card compare-card--do">
+      <div class="compare-card__label">[OK] DO</div>
+      <div class="compare-card__content">
+        <div style="display:flex;flex-direction:column;gap:var(--sp-sm)">
+          <div style="background:var(--seed);color:var(--bg);padding:var(--sp-sm) var(--sp-md);font-weight:700;font-size:0.82rem;text-transform:uppercase">[!] PRIMARY_ACTION</div>
+          <div style="border:1px solid var(--outline);color:var(--fg-muted);padding:var(--sp-sm) var(--sp-md);font-size:0.82rem;text-transform:uppercase">SECONDARY_OPTION</div>
+          <div style="font-size:0.72rem;color:var(--seed);padding-left:var(--sp-sm)">&gt; dismiss_all</div>
+        </div>
+        <div style="margin-top:var(--sp-md);font-size:0.75rem;color:var(--fg-muted)">One filled primary, one outlined secondary, one text action. Clear visual hierarchy.</div>
+      </div>
+    </div>
+
+    <div class="compare-card compare-card--dont">
+      <div class="compare-card__label">[ER] DON'T</div>
+      <div class="compare-card__content">
+        <div style="display:flex;flex-direction:column;gap:var(--sp-sm)">
+          <div style="background:var(--seed);color:var(--bg);padding:var(--sp-sm) var(--sp-md);font-weight:700;font-size:0.82rem;text-transform:uppercase">ACTION_ONE</div>
+          <div style="background:var(--seed);color:var(--bg);padding:var(--sp-sm) var(--sp-md);font-weight:700;font-size:0.82rem;text-transform:uppercase">ACTION_TWO</div>
+          <div style="background:var(--seed);color:var(--bg);padding:var(--sp-sm) var(--sp-md);font-weight:700;font-size:0.82rem;text-transform:uppercase">ACTION_THREE</div>
+        </div>
+        <div style="margin-top:var(--sp-md);font-size:0.75rem;color:var(--fg-muted)">Three filled primary buttons. No hierarchy. Every action shouts equally — nothing gets attention.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 11.4 MOTION RULES -->
+<section class="subsection" aria-labelledby="motion-label">
+  <div id="motion-label" class="subsection__label">11.4 — Motion Rules (hover each row)</div>
+
+  <div style="border:1px solid var(--outline)">
+    <div class="motion-row" style="padding:0 var(--sp-md)">
+      <div class="motion-label">State transitions</div>
+      <div class="motion-bar motion-bar--fast"></div>
+      <div class="motion-rule"><code>--dur-fast</code> · <code>steps(4)</code> · hardware feel</div>
+    </div>
+    <div class="motion-row" style="padding:0 var(--sp-md)">
+      <div class="motion-label">Focus / hover changes</div>
+      <div class="motion-bar motion-bar--std"></div>
+      <div class="motion-rule"><code>--dur-std</code> · <code>steps(4)</code> · component default</div>
+    </div>
+    <div class="motion-row" style="padding:0 var(--sp-md)">
+      <div class="motion-label">Overlays / sheets</div>
+      <div class="motion-bar motion-bar--smooth"></div>
+      <div class="motion-rule"><code>300ms</code> · <code>--ease-smooth</code> · spatial movement only</div>
+    </div>
+    <div class="motion-row" style="padding:0 var(--sp-md)">
+      <div class="motion-label">Blink (cursor only)</div>
+      <div class="motion-bar motion-bar--never"></div>
+      <div class="motion-rule">Reserve for the text insertion cursor. Never decorative.</div>
+    </div>
+    <div class="motion-row" style="padding:0 var(--sp-md)">
+      <div class="motion-label">Pulse (critical only)</div>
+      <div class="motion-bar motion-bar--never"></div>
+      <div class="motion-rule">FAB + critical system alerts only. Pauses on hover/focus.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 11.5 ACCESSIBILITY CHECKLIST -->
+<section class="subsection" aria-labelledby="a11y-label">
+  <div id="a11y-label" class="subsection__label">11.5 — Accessibility Checklist (click to check off)</div>
+
+  <div class="checklist" role="list" aria-label="Accessibility checklist">
+    <div class="checklist__item done" role="listitem" onclick="this.classList.toggle('done')">
+      <div class="checklist__box" aria-hidden="true"></div>
+      <div class="checklist__text">All interactive elements are <code>&lt;button&gt;</code> or <code>&lt;a&gt;</code> — never <code>&lt;div onclick&gt;</code></div>
+    </div>
+    <div class="checklist__item done" role="listitem" onclick="this.classList.toggle('done')">
+      <div class="checklist__box" aria-hidden="true"></div>
+      <div class="checklist__text">Every interactive element has a <code>:focus-visible</code> outline using <code>--seed</code> color</div>
+    </div>
+    <div class="checklist__item done" role="listitem" onclick="this.classList.toggle('done')">
+      <div class="checklist__box" aria-hidden="true"></div>
+      <div class="checklist__text">All touch targets meet the 48px MD3 minimum via <code>min-height: var(--touch-target)</code></div>
+    </div>
+    <div class="checklist__item done" role="listitem" onclick="this.classList.toggle('done')">
+      <div class="checklist__box" aria-hidden="true"></div>
+      <div class="checklist__text">State is never conveyed by color alone — textual indicators like <code>[OK]</code>, <code>[ER]</code>, <code>[WR]</code> accompany all badges</div>
+    </div>
+    <div class="checklist__item done" role="listitem" onclick="this.classList.toggle('done')">
+      <div class="checklist__box" aria-hidden="true"></div>
+      <div class="checklist__text">Dialogs use native <code>&lt;dialog&gt;</code> element for free focus trapping and Escape key handling</div>
+    </div>
+    <div class="checklist__item done" role="listitem" onclick="this.classList.toggle('done')">
+      <div class="checklist__box" aria-hidden="true"></div>
+      <div class="checklist__text">Live regions use <code>aria-live="polite"</code> for log streams, toasts, and status updates</div>
+    </div>
+    <div class="checklist__item done" role="listitem" onclick="this.classList.toggle('done')">
+      <div class="checklist__box" aria-hidden="true"></div>
+      <div class="checklist__text">Form inputs have associated <code>&lt;label&gt;</code> elements — never placeholder-only labeling</div>
+    </div>
+    <div class="checklist__item" role="listitem" onclick="this.classList.toggle('done')">
+      <div class="checklist__box" aria-hidden="true"></div>
+      <div class="checklist__text">Tab order follows visual reading order — no <code>tabindex</code> values greater than 0</div>
+    </div>
+    <div class="checklist__item" role="listitem" onclick="this.classList.toggle('done')">
+      <div class="checklist__box" aria-hidden="true"></div>
+      <div class="checklist__text">Contrast ratio meets 4.5:1 minimum for body text against all surface backgrounds</div>
+    </div>
+    <div class="checklist__item" role="listitem" onclick="this.classList.toggle('done')">
+      <div class="checklist__box" aria-hidden="true"></div>
+      <div class="checklist__text">Decorative elements (scanlines, glyphs) have <code>aria-hidden="true"</code> or <code>pointer-events:none</code></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11.6 DO / DON'T PATTERNS -->
+<section class="subsection" aria-labelledby="patterns-label">
+  <div id="patterns-label" class="subsection__label">11.6 — Do / Don't Patterns</div>
+
+  <div style="display:flex;flex-direction:column;gap:var(--sp-md)">
+
+    <div class="compare-grid">
+      <div class="compare-card compare-card--do">
+        <div class="compare-card__label">[OK] DO — semantic state badges</div>
+        <div class="compare-card__content">
+          <div style="display:flex;gap:var(--sp-sm);flex-wrap:wrap">
+            <span style="color:var(--green);border:1px solid var(--green);padding:2px 8px;font-size:0.72rem;font-weight:700">[OK] SUCCESS</span>
+            <span style="color:var(--red);border:1px solid var(--red);padding:2px 8px;font-size:0.72rem;font-weight:700">[ER] FAILED</span>
+          </div>
+          <div style="margin-top:var(--sp-sm);font-size:0.75rem;color:var(--fg-muted)">Text + color. Works in print, monochrome, and for colorblind users.</div>
+        </div>
+      </div>
+      <div class="compare-card compare-card--dont">
+        <div class="compare-card__label">[ER] DON'T — color-only state</div>
+        <div class="compare-card__content">
+          <div style="display:flex;gap:var(--sp-sm);flex-wrap:wrap">
+            <span style="background:var(--green);width:16px;height:16px;display:inline-block"></span>
+            <span style="background:var(--red);width:16px;height:16px;display:inline-block"></span>
+          </div>
+          <div style="margin-top:var(--sp-sm);font-size:0.75rem;color:var(--fg-muted)">Color-only. Meaningless without vision, in monochrome, or in a log file.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="compare-grid">
+      <div class="compare-card compare-card--do">
+        <div class="compare-card__label">[OK] DO — labelled inputs</div>
+        <div class="compare-card__content">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:0.65rem;color:var(--fg-subtle);text-transform:uppercase;letter-spacing:2px" for="demo-good">USERNAME</label>
+            <input id="demo-good" type="text" style="border:1px solid var(--outline);background:var(--surface);color:var(--fg);font-family:'JetBrains Mono',monospace;font-size:0.82rem;padding:4px 8px;height:40px;width:100%;outline:none" placeholder="enter_value_">
+          </div>
+          <div style="margin-top:var(--sp-sm);font-size:0.75rem;color:var(--fg-muted)">Label is associated via <code>for</code>/<code>id</code>. Always visible, never disappears on focus.</div>
+        </div>
+      </div>
+      <div class="compare-card compare-card--dont">
+        <div class="compare-card__label">[ER] DON'T — placeholder-only</div>
+        <div class="compare-card__content">
+          <input type="text" style="border:1px solid var(--outline);background:var(--surface);color:var(--fg);font-family:'JetBrains Mono',monospace;font-size:0.82rem;padding:4px 8px;height:40px;width:100%;outline:none" placeholder="Enter username...">
+          <div style="margin-top:var(--sp-sm);font-size:0.75rem;color:var(--fg-muted)">No label. Placeholder vanishes on focus. Screen readers may not announce it.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- 11.7 QUICK REFERENCE -->
+<section class="subsection" aria-labelledby="ref-label">
+  <div id="ref-label" class="subsection__label">11.7 — Quick Reference</div>
+
+  <table class="spec-table">
+    <thead><tr><th>Rule</th><th>Token / Class</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Touch target minimum</td><td><code>min-height: var(--touch-target)</code></td><td>MD3 + iOS HIG minimum for reliable tapping</td></tr>
+      <tr><td>Focus ring</td><td><code>outline: 2px solid var(--seed); outline-offset: 2px</code></td><td>Keyboard users must see where focus is</td></tr>
+      <tr><td>Color-only state</td><td>Always add <code>[OK] [ER] [WR]</code> prefix</td><td>WCAG 1.4.1 — no info conveyed by color alone</td></tr>
+      <tr><td>Inline styles in consumers</td><td>Never — use modifier classes</td><td>Theming, overrides, and maintenance</td></tr>
+      <tr><td>Div for buttons</td><td>Use <code>&lt;button&gt;</code></td><td>Free: Enter/Space, focus, disabled, ARIA role</td></tr>
+      <tr><td>Max primary actions</td><td>1 per view</td><td>The Rule of One — visual hierarchy</td></tr>
+      <tr><td>Blink animation</td><td>Text cursor only</td><td>Decorative blink is distracting and inaccessible</td></tr>
+      <tr><td>Steps easing</td><td><code>steps(4)</code> for UI, <code>ease-smooth</code> for spatial</td><td>Maintains the TUI "hardware" aesthetic</td></tr>
+    </tbody>
+  </table>
+
+  <div class="code-block">
+    <div class="code-block__header">
+      <span class="code-block__lang">CSS — focus ring template</span>
+      <button class="code-block__copy" onclick="copyCode(this,'focus')">COPY</button>
+    </div>
+    <pre id="code-focus"><span class="hl-com">/* Apply to every interactive element */</span>
+<span class="hl-tag">.metui-btn</span>:focus-visible,
+<span class="hl-tag">.metui-input</span>:focus-visible,
+<span class="hl-tag">.metui-nav-item</span>:focus-visible,
+<span class="hl-tag">[role="button"]</span>:focus-visible {
+  <span class="hl-attr">outline</span>: <span class="hl-val">2px solid var(--seed)</span>;
+  <span class="hl-attr">outline-offset</span>: <span class="hl-val">2px</span>;
+}
+
+<span class="hl-com">/* Use :focus-visible not :focus —</span>
+<span class="hl-com">   suppresses ring for mouse clicks,</span>
+<span class="hl-com">   shows it for keyboard navigation */</span></pre>
+  </div>
+</section>
+
 <script>
+function copyCode(btn, id) {
+  const pre = document.getElementById('code-' + id);
+  if (!pre) return;
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'COPIED'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
 window.addEventListener('message', e => {
   if (e.data?.type !== 'METUI_THEME') return;
   const root = document.documentElement;
